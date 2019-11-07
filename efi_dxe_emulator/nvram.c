@@ -1,0 +1,435 @@
+/*
+ * ______________________.___
+ * \_   _____/\_   _____/|   |
+ *  |    __)_  |    __)  |   |
+ *  |        \ |     \   |   |
+ * /_______  / \___  /   |___|
+ *         \/      \/
+ * ________  ____  ______________
+ * \______ \ \   \/  /\_   _____/
+ *  |    |  \ \     /  |    __)_
+ *  |    `   \/     \  |        \
+ *  /_______  /___/\  \/_______  /
+ *          \/      \_/        \/
+ * ___________             .__          __
+ * \_   _____/ _____  __ __|  | _____ _/  |_  ___________
+ *  |    __)_ /     \|  |  \  | \__  \\   __\/  _ \_  __ \
+ *  |        \  Y Y  \  |  /  |__/ __ \|  | (  <_> )  | \/
+ * /_______  /__|_|  /____/|____(____  /__|  \____/|__|
+ *         \/      \/                \/
+ *
+ * EFI DXE Emulator
+ *
+ * An EFI DXE binary emulator based on Unicorn Engine
+ *
+ * Created by fG! on 26/04/16.
+ * Copyright © 2016-2019 Pedro Vilaca. All rights reserved.
+ * reverser@put.as - https://reverse.put.as
+ *
+ * nvram.c
+ *
+ * Functions related to EFI NVRAM
+ *
+ * All advertising materials mentioning features or use of this software must display
+ * the following acknowledgement: This product includes software developed by
+ * Pedro Vilaca.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ 
+ * 1. Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software must
+ * display the following acknowledgement: This product includes software developed
+ * by Pedro Vilaca.
+ * 4. Neither the name of the author nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without specific
+ * prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+#include "nvram.h"
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+
+#include "logging.h"
+#include "config.h"
+#include "efi_definitions.h"
+#include "string_ops.h"
+#include "cmds.h"
+#include "mem_utils.h"
+
+uint8_t *g_nvram_buf;
+size_t g_nvram_buf_size;
+
+struct nvram_vars_tailhead g_nvram_vars = TAILQ_HEAD_INITIALIZER(g_nvram_vars);
+
+static int dump_nvram_cmd(const char *exp, uc_engine *uc);
+static void dump_nvram_vars(void);
+static void retrieve_nvram_vars(void);
+static int parse_nvram(uint8_t *buf, size_t buf_size);
+
+#pragma mark -
+#pragma mark Functions to register the commands
+#pragma mark -
+
+void
+register_nvram_cmds(uc_engine *uc)
+{
+    add_user_cmd("nvram", NULL, dump_nvram_cmd, "Dump NVRAM contents.\n\nnvram", uc);
+}
+
+#pragma mark -
+#pragma mark Commands functions
+#pragma mark -
+
+static int
+dump_nvram_cmd(const char *exp, uc_engine *uc)
+{
+    dump_nvram_vars();
+    return 0;
+}
+
+#pragma mark -
+#pragma mark Other functions
+#pragma mark -
+
+int
+load_nvram(char *nvram_file)
+{
+    int fd = open(nvram_file, O_RDONLY);
+    if (fd < 0)
+    {
+        return -1;
+    }
+
+    struct stat stat_buf = {0};
+    if (fstat(fd, &stat_buf) < 0)
+    {
+        ERROR_MSG("Failed to fstat nvram file.");
+        close(fd);
+        return -1;
+    }
+    
+    g_nvram_buf_size = stat_buf.st_size;
+    if ((g_nvram_buf = mmap(0, g_nvram_buf_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
+    {
+        ERROR_MSG("Failed to mmap nvram file.");
+        close(fd);
+        return -1;
+    }
+    close(fd);
+
+    parse_nvram(g_nvram_buf, g_nvram_buf_size);
+    retrieve_nvram_vars();
+    
+    return 0;
+}
+
+int
+dump_vss_store(uint8_t *store_buf, uint32_t store_size)
+{
+    uint8_t *store_ptr = store_buf;
+    while (store_ptr < store_buf + store_size)
+    {
+        VSS_VARIABLE_HEADER *var_header = (VSS_VARIABLE_HEADER*)store_ptr;
+        if (var_header->StartId == NVRAM_VSS_VARIABLE_START_ID)
+        {
+            if (var_header->State == NVRAM_VSS_VARIABLE_HEADER_VALID || var_header->State == NVRAM_VSS_VARIABLE_ADDED)
+            {
+                DEBUG_MSG("Found variable with state %d!", var_header->State);
+                EFI_GUID *guid = &var_header->VendorGuid;
+                OUTPUT_MSG("%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                           guid->Data1, guid->Data2, guid->Data3,
+                           guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
+                           guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+                DEBUG_MSG("Data size: 0x%x Name size: 0x%x Header size: 0x%lx", var_header->DataSize, var_header->NameSize, sizeof(VSS_VARIABLE_HEADER));
+                printf("Variable name: ");
+                char *name_ptr = (char*)var_header + sizeof(VSS_VARIABLE_HEADER);
+                for (int i = 0; i < var_header->NameSize; i++)
+                {
+                    if (name_ptr[i] != 0x0)
+                    {
+                        printf("%c", name_ptr[i]);
+                    }
+                }
+                printf("\n");
+                char *data_ptr = (char*)var_header + sizeof(VSS_VARIABLE_HEADER) + var_header->NameSize;
+                for (int i = 0; i < var_header->DataSize; i++)
+                {
+                    printf("%02x ", (unsigned char)data_ptr[i]);
+                }
+                printf("\n");
+            }
+            store_ptr += var_header->DataSize + var_header->NameSize + sizeof(VSS_VARIABLE_HEADER);
+        }
+        else
+        {
+            store_ptr += 1;
+        }
+    }
+    return 0;
+}
+
+static int
+parse_nvram(uint8_t *buf, size_t buf_size)
+{
+    uint8_t *buf_ptr = buf;
+    size_t cur_pos = 0;
+    
+    while (cur_pos < buf_size)
+    {
+        VSS_VARIABLE_STORE_HEADER *vss_header = (VSS_VARIABLE_STORE_HEADER*)buf_ptr;
+        switch (vss_header->Signature) {
+            case NVRAM_VSS_STORE_SIGNATURE:
+            {
+                DEBUG_MSG("VSS variable store at 0x%lx.", cur_pos);
+//                dump_vss_store(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER));
+                buf_ptr += vss_header->Size;
+                cur_pos += vss_header->Size;
+                
+                break;
+            }
+            case NVRAM_APPLE_SVS_STORE_SIGNATURE:
+            {
+                DEBUG_MSG("SVS variable store at 0x%lx.", cur_pos);
+                dump_vss_store(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER));
+                buf_ptr += vss_header->Size;
+                cur_pos += vss_header->Size;
+                break;
+            }
+            default:
+            {
+                buf_ptr += 1;
+                cur_pos += 1;
+                break;
+            }
+        }
+        
+    }
+    return 0;
+}
+
+int
+find_vss_var(uint8_t *store_buf, uint32_t store_size, CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
+{
+    uint8_t *store_ptr = store_buf;
+    while (store_ptr < store_buf + store_size)
+    {
+        VSS_VARIABLE_HEADER *var_header = (VSS_VARIABLE_HEADER*)store_ptr;
+        if (var_header->StartId == NVRAM_VSS_VARIABLE_START_ID)
+        {
+            if (var_header->State == NVRAM_VSS_VARIABLE_HEADER_VALID || var_header->State == NVRAM_VSS_VARIABLE_ADDED)
+            {
+                EFI_GUID *header_guid = &var_header->VendorGuid;
+                CHAR16 *name_ptr = (CHAR16*)((char*)var_header + sizeof(VSS_VARIABLE_HEADER));
+                if (memcmp(guid, header_guid, sizeof(EFI_GUID)) == 0 &&
+                    memcmp(var_name, name_ptr, var_header->NameSize) == 0)
+                {
+                    DEBUG_MSG("Found variable!");
+                    *content_size = var_header->DataSize;
+                    if (out_buf != NULL)
+                    {
+                        *out_buf = my_malloc(var_header->DataSize);
+                        memcpy(*out_buf, (char*)var_header + sizeof(VSS_VARIABLE_HEADER) + var_header->NameSize, var_header->DataSize);
+                    }
+                    break;
+                }
+            }
+            store_ptr += var_header->DataSize + var_header->NameSize + sizeof(VSS_VARIABLE_HEADER);
+        }
+        else
+        {
+            store_ptr += 1;
+        }
+    }
+    return 0;
+}
+
+int
+lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
+{
+    uint8_t *buf_ptr = g_nvram_buf;
+    size_t cur_pos = 0;
+    
+    while (cur_pos < g_nvram_buf_size)
+    {
+        VSS_VARIABLE_STORE_HEADER *vss_header = (VSS_VARIABLE_STORE_HEADER*)buf_ptr;
+        switch (vss_header->Signature) {
+            case NVRAM_VSS_STORE_SIGNATURE:
+            {
+                find_vss_var(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER), var_name, guid, content_size, out_buf);
+                buf_ptr += vss_header->Size;
+                cur_pos += vss_header->Size;
+                break;
+            }
+            case NVRAM_APPLE_SVS_STORE_SIGNATURE:
+            {
+                find_vss_var(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER), var_name, guid, content_size, out_buf);
+                buf_ptr += vss_header->Size;
+                cur_pos += vss_header->Size;
+                break;
+            }
+            default:
+            {
+                buf_ptr += 1;
+                cur_pos += 1;
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+static void
+dump_nvram_vars(void)
+{
+    OUTPUT_MSG("\n-[ NVRAM variables dump ]---------------------");
+    struct nvram_variables *entry = NULL;
+    TAILQ_FOREACH(entry, &g_nvram_vars, entries)
+    {
+        uint32_t length = StrLen(entry->name);
+        char *c_string = my_malloc(length+2);
+        UnicodeStrToAsciiStr(entry->name, c_string);
+        OUTPUT_MSG("\n-[ Variable: %s ]-", c_string);
+        EFI_GUID *guid = &entry->guid;
+        OUTPUT_MSG("-[ GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X ]-",
+                   guid->Data1, guid->Data2, guid->Data3,
+                   guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
+                   guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+        free(c_string);
+        /* output data in hex and characters if possible */
+        int i = 0;
+        int x = 0;
+        int z = 0;
+        int linelength = 0;
+        OUTPUT_MSG("-[ Contents ]-");
+        while (i < entry->data_size)
+        {
+            linelength = (entry->data_size -i) <= 16 ? entry->data_size - i : 16;
+            z = i;
+            for (x = 0; x < linelength; x++)
+            {
+                fprintf(stdout, "%02X ", entry->data[z++]);
+            }
+            // make it always 16 columns, this could be prettier :P
+            for (x = linelength; x < 16; x++)
+            {
+                fprintf(stdout, "   ");
+            }
+            z = i;
+            // try to print ascii
+            fprintf(stdout, "|");
+            for (x = 0; x < linelength; x++)
+            {
+                fprintf(stdout, "%c", isascii(entry->data[z]) && isprint(entry->data[z]) ? entry->data[z] : '.');
+                z++;
+            }
+            i += 16;
+            fprintf(stdout, "|\n");
+
+        }
+    }
+    OUTPUT_MSG("\n-[ End NVRAM variables dump ]---------------------");
+    return;
+}
+
+static void
+retrieve_nvram_vars(void)
+{
+    TAILQ_INIT(&g_nvram_vars);
+    
+    uint8_t *buf_ptr = g_nvram_buf;
+    size_t cur_pos = 0;
+    
+    while (cur_pos < g_nvram_buf_size)
+    {
+        VSS_VARIABLE_STORE_HEADER *vss_header = (VSS_VARIABLE_STORE_HEADER*)buf_ptr;
+        switch (vss_header->Signature)
+        {
+            case NVRAM_VSS_STORE_SIGNATURE:
+            case NVRAM_APPLE_SVS_STORE_SIGNATURE:
+            {
+                uint8_t *store_ptr = buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER);
+                uint32_t store_size = vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER);
+                while (store_ptr < buf_ptr + store_size)
+                {
+                    VSS_VARIABLE_HEADER *var_header = (VSS_VARIABLE_HEADER*)(store_ptr);
+                    if (var_header->StartId == NVRAM_VSS_VARIABLE_START_ID)
+                    {
+                        if (var_header->State == NVRAM_VSS_VARIABLE_HEADER_VALID || var_header->State == NVRAM_VSS_VARIABLE_ADDED)
+                        {
+                            CHAR16 *name_ptr = (CHAR16*)((char*)var_header + sizeof(VSS_VARIABLE_HEADER));
+                            struct nvram_variables *cur_entry = NULL;
+                            int found = 0;
+                            TAILQ_FOREACH(cur_entry, &g_nvram_vars, entries)
+                            {
+                                if (memcmp(name_ptr, cur_entry->name, cur_entry->name_size) == 0)
+                                {
+                                    found = 1;
+                                    break;
+                                }
+                            }
+                            if (found == 0)
+                            {
+                                struct nvram_variables *new_entry = my_malloc(sizeof(struct nvram_variables));
+                                memcpy(&new_entry->guid, &var_header->VendorGuid, sizeof(EFI_GUID));
+                                if (var_header->NameSize <= sizeof(new_entry->name))
+                                {
+                                    memcpy(new_entry->name, name_ptr, var_header->NameSize);
+                                }
+                                else
+                                {
+                                    memcpy(new_entry->name, name_ptr, sizeof(new_entry->name));
+                                }
+                                new_entry->name_size = var_header->NameSize;
+                                new_entry->data_size = var_header->DataSize;
+                                new_entry->data = my_malloc(var_header->DataSize);
+                                memcpy(new_entry->data, (char*)var_header + sizeof(VSS_VARIABLE_HEADER) + var_header->NameSize, var_header->DataSize);
+                                TAILQ_INSERT_TAIL(&g_nvram_vars, new_entry, entries);
+                            }
+                        }
+                        store_ptr += var_header->DataSize + var_header->NameSize + sizeof(VSS_VARIABLE_HEADER);
+                    }
+                    else
+                    {
+                        store_ptr += 1;
+                    }
+                }
+                buf_ptr += vss_header->Size;
+                cur_pos += vss_header->Size;
+                break;
+            }
+            default:
+            {
+                buf_ptr += 1;
+                cur_pos += 1;
+                break;
+            }
+        }
+    }
+    return;
+}
