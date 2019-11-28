@@ -465,7 +465,7 @@ fix_relocations(uc_engine *uc, struct bin_image *image)
     
     DEBUG_MSG("Relocation table virtual address: 0x%x size: %d", image->relocation_info.VirtualAddress, image->relocation_info.Size);
     /* this tells us where the reloc section is so we can process relocation information available there */
-    uint64_t reloc_start = image->mapped_addr + image->relocation_info.VirtualAddress;
+    uint64_t reloc_start = image->relocation_info.VirtualAddress;
     uint64_t reloc_end = reloc_start + image->relocation_info.Size;
     /* how much did we relocate this image when we mapped in into Unicorn emulation memory */
     uint64_t delta = image->mapped_addr - image->base_addr;
@@ -479,7 +479,7 @@ fix_relocations(uc_engine *uc, struct bin_image *image)
     while (current_reloc < reloc_end)
     {
         /* the location of the relocation block header */
-        IMAGE_BASE_RELOCATION *reloc_hdr = (IMAGE_BASE_RELOCATION*)(image->buf + image->relocation_info.VirtualAddress);
+        IMAGE_BASE_RELOCATION *reloc_hdr = (IMAGE_BASE_RELOCATION*)(image->buf + current_reloc);
         DEBUG_MSG("Relocation info: 0x%x 0x%x", reloc_hdr->VirtualAddress, reloc_hdr->SizeOfBlock);
         int total_entries = (reloc_hdr->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION))/sizeof(uint16_t);
         DEBUG_MSG("Total relocation entries: %d", total_entries);
