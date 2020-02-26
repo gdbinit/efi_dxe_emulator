@@ -68,7 +68,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#include <mman/sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
@@ -94,7 +94,7 @@ struct bin_images_tailq g_images = TAILQ_HEAD_INITIALIZER(g_images);
 EFI_SYSTEM_TABLE g_efi_table = {0};
 
 #ifndef ALIGN
-#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#define ALIGN(x,t,a)              __ALIGN_MASK(x,(t)(a)-1)
 #define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
 #endif
 #ifndef MIN
@@ -108,9 +108,7 @@ static int install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tra
 static int load_and_map_other_image(uc_engine *uc, char *image_path);
 static int parse_and_validate_PE_image(struct bin_image *target_image);
 
-#pragma mark -
-#pragma mark Exported functions
-#pragma mark -
+#pragma region Exported functions
 
 /*
  * load the main EFI binary that will be emulated
@@ -128,9 +126,9 @@ load_and_map_main_image(char *image_path, uc_engine *uc)
     
     /* don't deal with the two exceptions we found for now */
     /* almost all EFI binaries have this base address except two exceptions found in Apple ROM */
-    if (main_image->base_addr != 0x10000000)
+    if (main_image->base_addr != EXEC_ADDRESS)
     {
-        ERROR_MSG("Target binary has base address different than 0x10000000.");
+        ERROR_MSG("Target binary has base address different than 0x%08X.", EXEC_ADDRESS);
         return -1;
     }
     
@@ -207,9 +205,9 @@ create_and_map_efi_system_table(uc_engine *uc)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Local functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Local functions
 
 /* XXX: assuming target is always 64 bits?
  * Validate and parse the target image, and extract information we will need later on
@@ -296,8 +294,8 @@ parse_and_validate_PE_image(struct bin_image *target_image)
         IMAGE_SECTION_HEADER *section = (IMAGE_SECTION_HEADER*)section_start;
         for (int i = 0; i < header64->FileHeader.NumberOfSections; i++)
         {
-            DEBUG_MSG("Name %s @ 0x%llx VirtualSize: 0x%x RawSize: 0x%x Relocs: %d", section->Name, header64->OptionalHeader.ImageBase + section->VirtualAddress, section->VirtualSize, section->SizeOfRawData, section->NumberOfRelocations);
-            total_size += section->VirtualSize;
+            DEBUG_MSG("Name %s @ 0x%llx VirtualSize: 0x%x RawSize: 0x%x Relocs: %d", section->Name, header64->OptionalHeader.ImageBase + section->VirtualAddress, section->Misc.VirtualSize, section->SizeOfRawData, section->NumberOfRelocations);
+            total_size += section->Misc.VirtualSize;
             section = (IMAGE_SECTION_HEADER*)((char*)section + sizeof(IMAGE_SECTION_HEADER));
         }
     }
@@ -388,7 +386,7 @@ load_and_map_other_image(uc_engine *uc, char *image_path)
     assert(last_image != NULL);
     
     uint64_t last_img_end = last_image->mapped_addr + last_image->buf_size;
-    uint64_t last_aligned = ALIGN(last_img_end, 0x1000);
+    uint64_t last_aligned = ALIGN(last_img_end, uint64_t, 0x1000);
     
     DEBUG_MSG("Mapping other image to 0x%llx", last_aligned);
     if (load_image(image_path, 0) != 0)
@@ -434,9 +432,9 @@ map_image_to_emulator(uc_engine *uc, struct bin_image *target_image)
     IMAGE_SECTION_HEADER *section = (IMAGE_SECTION_HEADER*)section_start;
     for (int i = 0; i < target_image->nr_sections; i++)
     {
-        DEBUG_MSG("Mapping section name %s @ 0x%llx VirtualSize: 0x%x RawSize: 0x%x", section->Name, target_image->mapped_addr + section->VirtualAddress, section->VirtualSize, section->SizeOfRawData);
+        DEBUG_MSG("Mapping section name %s @ 0x%llx VirtualSize: 0x%x RawSize: 0x%x", section->Name, target_image->mapped_addr + section->VirtualAddress, section->Misc.VirtualSize, section->SizeOfRawData);
         
-        err = uc_mem_write(uc, target_image->mapped_addr + section->VirtualAddress, (void*)target_image->buf + section->PointerToRawData, MIN(section->SizeOfRawData, section->VirtualSize));
+        err = uc_mem_write(uc, target_image->mapped_addr + section->VirtualAddress, (void*)(target_image->buf + section->PointerToRawData), MIN(section->SizeOfRawData, section->Misc.VirtualSize));
         if (err != UC_ERR_OK)
         {
             ERROR_MSG("Failed to write section %s into emulator memory: %s (%d)", section->Name, uc_strerror(err), err);
@@ -573,3 +571,5 @@ install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tramp_start, u
     
     return 0;
 }
+
+#pragma endregion

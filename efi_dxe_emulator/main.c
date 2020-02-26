@@ -65,19 +65,17 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#include <mman/sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
-#include <pwd.h>
-#include <sys/param.h>
 #include <errno.h>
 
 #include <unicorn/unicorn.h>
 
 #include <linenoise.h>
-#include "../inih/ini.h"
+#include "ini.h"
 
 #include "pe_definitions.h"
 #include "efi_definitions.h"
@@ -247,26 +245,11 @@ main(int argc, const char * argv[])
         return EXIT_FAILURE;
     }
 
-    /* set a default history file to $HOME if not configured in the ini */
+    /* set a default history file to %USERPROFILE% if not configured in the ini */
     if (g_config.history_file == NULL)
     {
-        /* retrieve current user HOME path */
-        long home_bufsize = -1;
-        if ((home_bufsize = sysconf(_SC_GETPW_R_SIZE_MAX)) == -1)
-        {
-            abort();
-        }
-        
-        char *home_buffer = my_calloc(1, home_bufsize);        
-        struct passwd pwd = {0};
-        struct passwd *result = NULL;
-        if (getpwuid_r(getuid(), &pwd, home_buffer, home_bufsize, &result) != 0 || !result)
-        {
-            abort();
-        }
-        free(home_buffer);
-        g_config.history_file = my_calloc(1, MAXPATHLEN+1);
-        snprintf(g_config.history_file, MAXPATHLEN, "%s/%s", pwd.pw_dir, HISTORY_FILE);
+        g_config.history_file = my_calloc(1, MAX_PATH+1);
+        snprintf(g_config.history_file, MAX_PATH, "%s\\%s", getenv("USERPROFILE"), HISTORY_FILE);
     }
     
     /* and now start the party */

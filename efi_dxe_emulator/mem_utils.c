@@ -66,23 +66,21 @@
 #include "mem_utils.h"
 
 #include <stdlib.h>
-
-/* this allows us to set a message to CrashReporter when abort() is called */
-extern const char *__crashreporter_info__;
+#include <crtdbg.h>
 
 void *
 my_malloc(size_t size)
 {
     if (size == 0)
     {
-        __crashreporter_info__ = "zero size malloc requested";
+        _RPTF0(_CRT_ERROR, "zero size malloc requested");
         abort();
     }
     
     void *p = malloc(size);
     if (p == NULL)
     {
-        __crashreporter_info__ = "malloc failure";
+        _RPTF0(_CRT_ERROR, "malloc failure");
         abort();
     }
     return p;
@@ -93,13 +91,13 @@ my_calloc(size_t count, size_t size)
 {
     if (count == 0 || size == 0)
     {
-        __crashreporter_info__ = "zero size calloc requested";
+        _RPTF0(_CRT_ERROR, "zero size calloc requested");
         abort();
     }
     void *p = calloc(count, size);
     if (p == NULL)
     {
-        __crashreporter_info__ = "calloc failure";
+        _RPTF0(_CRT_ERROR, "calloc failure");
         abort();
     }
     return p;

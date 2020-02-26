@@ -85,6 +85,7 @@
 #include "unicorn_hooks.h"
 #include "capstone_utils.h"
 #include "mem_utils.h"
+#include "string_ops.h"
 
 struct breakpoints_tailq g_breakpoints = TAILQ_HEAD_INITIALIZER(g_breakpoints);
 
@@ -96,9 +97,7 @@ static int stepi_cmd(const char *exp, uc_engine *uc);
 static int add_tmp_bpt_cmd(const char *exp, uc_engine *uc);
 static int cfz_cmd(const char *exp, uc_engine *uc);
 
-#pragma mark -
-#pragma mark Exported functions
-#pragma mark -
+#pragma region Exported functions
 
 void
 register_breakpoint_cmds(uc_engine *uc)
@@ -179,9 +178,9 @@ find_breakpoint(uint64_t addr, int *type)
     return -1;
 }
 
-#pragma mark -
-#pragma mark Commands functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Commands functions
 
 static int
 add_bpt_cmd(const char *exp, uc_engine *uc)
@@ -490,3 +489,5 @@ cfz_cmd(const char *exp, uc_engine *uc)
     }
     return 0;
 }
+
+#pragma endregion

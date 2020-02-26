@@ -158,3 +158,47 @@ get_guid_string(EFI_GUID *guid)
              guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
     return guid_str;
 }
+
+char *
+strsep(char **stringp, const char *delim)
+{
+    char* begin, * end;
+    begin = *stringp;
+    if (begin == NULL)
+        return NULL;
+    /* Find the end of the token.  */
+    end = begin + strcspn(begin, delim);
+    if (*end)
+    {
+        /* Terminate the token and set *STRINGP past NUL character.  */
+        *end++ = '\0';
+        *stringp = end;
+    }
+    else
+        /* No more delimiters; this is the last token.  */
+        *stringp = NULL;
+    return begin;
+}
+
+size_t
+strlcpy(char *dst, const char *src, size_t siz)
+{
+    char* d = dst;
+    const char* s = src;
+    size_t n = siz;
+    /* Copy as many bytes as will fit */
+    if (n != 0) {
+        while (--n != 0) {
+            if ((*d++ = *s++) == '\0')
+                break;
+        }
+    }
+    /* Not enough room in dst, add NUL and traverse rest of src */
+    if (n == 0) {
+        if (siz != 0)
+            *d = '\0';		/* NUL-terminate dst */
+        while (*s++)
+            ;
+    }
+    return(s - src - 1);	/* count does not include NUL */
+}

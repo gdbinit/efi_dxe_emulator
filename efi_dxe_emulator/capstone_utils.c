@@ -88,9 +88,7 @@ static int find_jmp_target(uc_engine *uc, cs_insn *insn, uint64_t *out_addr);
 static int find_jxx_target(uc_engine *uc, cs_insn *insn, uint64_t *out_addr);
 static int find_call_target(uc_engine *uc, cs_insn *insn, uint64_t *out_addr);
 
-#pragma mark -
-#pragma mark Exported functions
-#pragma mark -
+#pragma region Exported functions
 
 /*
  * function to find what is the next instruction to be executed
@@ -460,9 +458,9 @@ print_dissassembly(uc_engine *uc, uint64_t addr)
     fprintf(stdout, SEPARATOR_COLOR "-----------------------------------------------------------------------------------------------------------------------------\n" ANSI_COLOR_RESET);
 }
 
-#pragma mark -
-#pragma mark Local functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Local functions
 
 static int
 find_jxx_target(uc_engine *uc, cs_insn *insn, uint64_t *dst_addr)
@@ -705,3 +703,5 @@ find_jmp_target(uc_engine *uc, cs_insn *insn, uint64_t *dst_addr)
     
     return 0;
 }
+
+#pragma endregion

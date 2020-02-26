@@ -82,7 +82,7 @@
 struct protocols_list
 {
     EFI_GUID guid;
-    uint64_t interface;
+    uint64_t iface;
     TAILQ_ENTRY(protocols_list) entries;
 };
 
@@ -91,7 +91,7 @@ TAILQ_HEAD(protocols_list_tailq, protocols_list);
 struct protocols_list_tailq g_installed_protocols = TAILQ_HEAD_INITIALIZER(g_installed_protocols);
 
 int
-add_protocol(EFI_GUID *guid, uint64_t interface)
+add_protocol(EFI_GUID *guid, uint64_t iface)
 {
     struct protocols_list *tmp_entry = 0;
     TAILQ_FOREACH(tmp_entry, &g_installed_protocols, entries)
@@ -105,7 +105,7 @@ add_protocol(EFI_GUID *guid, uint64_t interface)
     
     struct protocols_list *new_entry = my_malloc(sizeof(struct protocols_list));    
     memcpy(&new_entry->guid, guid, sizeof(EFI_GUID));
-    new_entry->interface = interface;
+    new_entry->iface = iface;
     TAILQ_INSERT_TAIL(&g_installed_protocols, new_entry, entries);
     
     return 0;
@@ -118,7 +118,7 @@ remove_protocol(void)
 }
 
 int
-locate_protocol(EFI_GUID *guid, uint64_t *interface)
+locate_protocol(EFI_GUID *guid, uint64_t *iface)
 {
     DEBUG_MSG("Trying to locate protocol %s", get_guid_string(guid));
     struct protocols_list *tmp_entry = 0;
@@ -127,7 +127,7 @@ locate_protocol(EFI_GUID *guid, uint64_t *interface)
         if (memcmp(&tmp_entry->guid, guid, sizeof(EFI_GUID)) == 0)
         {
             DEBUG_MSG("Found protocol!");
-            *interface = tmp_entry->interface;
+            *iface = tmp_entry->iface;
             return 0;
         }
     }

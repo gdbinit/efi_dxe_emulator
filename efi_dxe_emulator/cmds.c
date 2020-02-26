@@ -83,6 +83,7 @@
 #include "debugger.h"
 #include "global_cmds.h"
 #include "mem_utils.h"
+#include "string_ops.h"
 
 struct cmd_list
 {
@@ -256,9 +257,7 @@ parse_user_cmd(char *exp)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Commands functions
-#pragma mark -
+#pragma region Commands functions
 
 int
 help_cmd(const char *exp, uc_engine *uc)
@@ -337,3 +336,5 @@ history_cmd(const char *exp, uc_engine *uc)
     }
     return 0;
 }
+
+#pragma endregion

@@ -69,8 +69,8 @@
 #define HISTORY_FILE    ".efi_emulator_history"
 
 #define HOOK_SIZE                            1
-/* most DXE binaries (every except 2 at 0x400000) have base address of 0x10000000 */
-#define EXEC_ADDRESS                0x10000000
+/* change to match the base address of your DXE driver */
+#define EXEC_ADDRESS                0x00000000
 #define EXEC_SIZE             64 * 1024 * 1024
 #define STACK_ADDRESS               0x20000000
 #define STACK_SIZE             8 * 1024 * 1024

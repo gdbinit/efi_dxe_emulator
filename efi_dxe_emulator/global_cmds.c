@@ -83,6 +83,7 @@
 #include "debugger.h"
 #include "cmds.h"
 #include "loader.h"
+#include "string_ops.h"
 
 extern struct bin_images_tailq g_images;
 
@@ -91,9 +92,7 @@ static int run_cmd(const char *exp, uc_engine *uc);
 static int continue_cmd(const char *exp, uc_engine *uc);
 static int info_cmd(const char *exp, uc_engine *uc);
 
-#pragma mark -
-#pragma mark Functions to register the commands
-#pragma mark -
+#pragma region Functions to register the commands
 
 void
 register_global_cmds(uc_engine *uc)
@@ -106,9 +105,9 @@ register_global_cmds(uc_engine *uc)
     add_user_cmd("history", NULL, history_cmd, "Display comand line history.\n\nhistory", uc);
 }
 
-#pragma mark -
-#pragma mark Commands functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Commands functions
 
 static int
 quit_cmd(const char *exp, uc_engine *uc)
@@ -201,3 +200,5 @@ info_cmd(const char *exp, uc_engine *uc)
     
     return 0;
 }
+
+#pragma endregion

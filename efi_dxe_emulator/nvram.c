@@ -72,7 +72,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
+#include <mman/sys/mman.h>
 #include <fcntl.h>
 
 #include "logging.h"
@@ -92,9 +92,7 @@ static void dump_nvram_vars(void);
 static void retrieve_nvram_vars(void);
 static int parse_nvram(uint8_t *buf, size_t buf_size);
 
-#pragma mark -
-#pragma mark Functions to register the commands
-#pragma mark -
+#pragma region Functions to register the commands
 
 void
 register_nvram_cmds(uc_engine *uc)
@@ -102,9 +100,9 @@ register_nvram_cmds(uc_engine *uc)
     add_user_cmd("nvram", NULL, dump_nvram_cmd, "Dump NVRAM contents.\n\nnvram", uc);
 }
 
-#pragma mark -
-#pragma mark Commands functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Commands functions
 
 static int
 dump_nvram_cmd(const char *exp, uc_engine *uc)
@@ -113,9 +111,9 @@ dump_nvram_cmd(const char *exp, uc_engine *uc)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Other functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Other functions
 
 int
 load_nvram(char *nvram_file)
@@ -433,3 +431,5 @@ retrieve_nvram_vars(void)
     }
     return;
 }
+
+#pragma endregion

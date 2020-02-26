@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.props" Condition="Exists('..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{C0644D82-F462-4A2E-81E8-798980332FE2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="capstone.props" />
+    <Import Project="linenoise.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="linenoise.props" />
+    <Import Project="capstone.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="capstone.props" />
+    <Import Project="linenoise.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="linenoise.props" />
+    <Import Project="capstone.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories />
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="breakpoints.c" />
+    <ClCompile Include="capstone_utils.c" />
+    <ClCompile Include="cmds.c" />
+    <ClCompile Include="debugger.c" />
+    <ClCompile Include="efi_boot_hooks.c" />
+    <ClCompile Include="efi_runtime_hooks.c" />
+    <ClCompile Include="global_cmds.c" />
+    <ClCompile Include="loader.c" />
+    <ClCompile Include="logging.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="mem_utils.c" />
+    <ClCompile Include="nvram.c" />
+    <ClCompile Include="protocols.c" />
+    <ClCompile Include="string_ops.c" />
+    <ClCompile Include="unicorn_hooks.c" />
+    <ClCompile Include="unicorn_utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="breakpoints.h" />
+    <ClInclude Include="capstone_utils.h" />
+    <ClInclude Include="cmds.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="debugger.h" />
+    <ClInclude Include="efi_boot_hooks.h" />
+    <ClInclude Include="efi_definitions.h" />
+    <ClInclude Include="efi_runtime_hooks.h" />
+    <ClInclude Include="global_cmds.h" />
+    <ClInclude Include="loader.h" />
+    <ClInclude Include="logging.h" />
+    <ClInclude Include="mem_utils.h" />
+    <ClInclude Include="nvram.h" />
+    <ClInclude Include="pe_definitions.h" />
+    <ClInclude Include="protocols.h" />
+    <ClInclude Include="string_ops.h" />
+    <ClInclude Include="unicorn_hooks.h" />
+    <ClInclude Include="unicorn_macros.h" />
+    <ClInclude Include="unicorn_utils.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\vcpkg-export-20200225-184607.1.0.0\build\native\vcpkg-export-20200225-184607.targets" Condition="Exists('..\packages\vcpkg-export-20200225-184607.1.0.0\build\native\vcpkg-export-20200225-184607.targets')" />
+    <Import Project="..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.targets" Condition="Exists('..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.targets')" />
+    <Import Project="..\packages\vcpkg-export-20200226-112138.1.0.0\build\native\vcpkg-export-20200226-112138.targets" Condition="Exists('..\packages\vcpkg-export-20200226-112138.1.0.0\build\native\vcpkg-export-20200226-112138.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\vcpkg-export-20200225-184607.1.0.0\build\native\vcpkg-export-20200225-184607.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg-export-20200225-184607.1.0.0\build\native\vcpkg-export-20200225-184607.targets'))" />
+    <Error Condition="!Exists('..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.props'))" />
+    <Error Condition="!Exists('..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.C.Tools.vcpkg.1.0.0\build\native\vcpkg.C.Tools.vcpkg.targets'))" />
+    <Error Condition="!Exists('..\packages\vcpkg-export-20200226-112138.1.0.0\build\native\vcpkg-export-20200226-112138.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg-export-20200226-112138.1.0.0\build\native\vcpkg-export-20200226-112138.targets'))" />
+  </Target>
+</Project>

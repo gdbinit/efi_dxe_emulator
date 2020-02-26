@@ -174,9 +174,8 @@ typedef struct APPLE_FSYS_STORE_HEADER_ {
 // All free bytes in store are zeroed
 // Has CRC32 of the whole store without checksum field at the end
 
-#pragma pack(pop)
 
-struct __attribute__ ((__packed__)) VSS_APPLE_VARIABLE_HEADER {
+struct VSS_APPLE_VARIABLE_HEADER {
     uint16_t    StartId; /* 0x AA 0x 55 */
     uint8_t     State;
     uint8_t     : 8;
@@ -186,3 +185,5 @@ struct __attribute__ ((__packed__)) VSS_APPLE_VARIABLE_HEADER {
     EFI_GUID    VendorGuid;
     //    uint32_t    DataCrc32;
 };
+
+#pragma pack(pop)

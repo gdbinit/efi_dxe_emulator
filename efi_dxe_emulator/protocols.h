@@ -66,5 +66,5 @@
 #include <stdio.h>
 #include "efi_definitions.h"
 
-int add_protocol(EFI_GUID *guid, uint64_t interface);
-int locate_protocol(EFI_GUID *guid, uint64_t *interface);
+int add_protocol(EFI_GUID *guid, uint64_t iface);
+int locate_protocol(EFI_GUID *guid, uint64_t *iface);

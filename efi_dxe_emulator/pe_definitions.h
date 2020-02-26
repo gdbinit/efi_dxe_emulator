@@ -70,8 +70,6 @@ typedef uint8_t UINT8;
 typedef uint16_t UINT16;
 typedef uint32_t UINT32;
 typedef uint64_t UINT64;
-typedef void VOID;
-typedef uint32_t DWORD;
 typedef uint16_t WORD;
 typedef uint8_t BYTE;
 typedef uint64_t ULONGLONG;
@@ -83,42 +81,6 @@ typedef uint16_t USHORT;
 #define IMAGE_VXD_SIGNATURE                 0x454C      // LE
 #define IMAGE_NT_SIGNATURE                  0x00004550  // PE00
 #define EFI_IMAGE_TE_SIGNATURE              0x5A56      // VZ
-
-#pragma pack(push,2)
-
-typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
-    WORD   e_magic;                     // Magic number
-    WORD   e_cblp;                      // Bytes on last page of file
-    WORD   e_cp;                        // Pages in file
-    WORD   e_crlc;                      // Relocations
-    WORD   e_cparhdr;                   // Size of header in paragraphs
-    WORD   e_minalloc;                  // Minimum extra paragraphs needed
-    WORD   e_maxalloc;                  // Maximum extra paragraphs needed
-    WORD   e_ss;                        // Initial (relative) SS value
-    WORD   e_sp;                        // Initial SP value
-    WORD   e_csum;                      // Checksum
-    WORD   e_ip;                        // Initial IP value
-    WORD   e_cs;                        // Initial (relative) CS value
-    WORD   e_lfarlc;                    // File address of relocation table
-    WORD   e_ovno;                      // Overlay number
-    WORD   e_res[4];                    // Reserved words
-    WORD   e_oemid;                     // OEM identifier (for e_oeminfo)
-    WORD   e_oeminfo;                   // OEM information; e_oemid specific
-    WORD   e_res2[10];                  // Reserved words
-    DWORD   e_lfanew;                    // File address of new exe header
-} IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
-
-#pragma pack(pop)
-
-typedef struct _IMAGE_FILE_HEADER {
-    WORD  Machine;
-    WORD  NumberOfSections;
-    DWORD TimeDateStamp;
-    DWORD PointerToSymbolTable;
-    DWORD NumberOfSymbols;
-    WORD  SizeOfOptionalHeader;
-    WORD  Characteristics;
-} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 
 #define IMAGE_SIZEOF_FILE_HEADER             20
 
@@ -168,78 +130,7 @@ typedef struct _IMAGE_FILE_HEADER {
 #define IMAGE_FILE_MACHINE_M32R              0x9041  // M32R little-endian
 #define IMAGE_FILE_MACHINE_CEE               0xC0EE
 
-//
-// Directory format.
-//
-
-typedef struct _IMAGE_DATA_DIRECTORY {
-    DWORD VirtualAddress;
-    DWORD Size;
-} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
-
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES    16
-
-//
-// Optional header format.
-//
-
-typedef struct _IMAGE_OPTIONAL_HEADER {
-    //
-    // Standard fields.
-    //
-    WORD                 Magic;
-    BYTE                 MajorLinkerVersion;
-    BYTE                 MinorLinkerVersion;
-    DWORD                SizeOfCode;
-    DWORD                SizeOfInitializedData;
-    DWORD                SizeOfUninitializedData;
-    DWORD                AddressOfEntryPoint;
-    DWORD                BaseOfCode;
-    DWORD                BaseOfData;
-
-    //
-    // NT additional fields.
-    //
-
-    DWORD                ImageBase;
-    DWORD                SectionAlignment;
-    DWORD                FileAlignment;
-    WORD                 MajorOperatingSystemVersion;
-    WORD                 MinorOperatingSystemVersion;
-    WORD                 MajorImageVersion;
-    WORD                 MinorImageVersion;
-    WORD                 MajorSubsystemVersion;
-    WORD                 MinorSubsystemVersion;
-    DWORD                Win32VersionValue;
-    DWORD                SizeOfImage;
-    DWORD                SizeOfHeaders;
-    DWORD                CheckSum;
-    WORD                 Subsystem;
-    WORD                 DllCharacteristics;
-    DWORD                SizeOfStackReserve;
-    DWORD                SizeOfStackCommit;
-    DWORD                SizeOfHeapReserve;
-    DWORD                SizeOfHeapCommit;
-    DWORD                LoaderFlags;
-    DWORD                NumberOfRvaAndSizes;
-    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;
-
-typedef struct _IMAGE_ROM_OPTIONAL_HEADER {
-    USHORT   Magic;
-    BYTE   MajorLinkerVersion;
-    BYTE   MinorLinkerVersion;
-    DWORD  SizeOfCode;
-    DWORD  SizeOfInitializedData;
-    DWORD  SizeOfUninitializedData;
-    DWORD  AddressOfEntryPoint;
-    DWORD  BaseOfCode;
-    DWORD  BaseOfData;
-    DWORD  BaseOfBss;
-    DWORD  GprMask;
-    DWORD  CprMask[4];
-    DWORD  GpValue;
-} IMAGE_ROM_OPTIONAL_HEADER, *PIMAGE_ROM_OPTIONAL_HEADER;
 
 #define IMAGE_SIZEOF_ROM_OPTIONAL_HEADER      56
 #define IMAGE_SIZEOF_STD_OPTIONAL_HEADER      28
@@ -250,60 +141,60 @@ typedef struct _IMAGE_ROM_OPTIONAL_HEADER {
 #define IMAGE_ROM_OPTIONAL_HDR_MAGIC       0x107
 
 #define IMAGE_SIZEOF_NT_OPTIONAL_HEADER     IMAGE_SIZEOF_NT_OPTIONAL32_HEADER
-#define IMAGE_NT_OPTIONAL_HDR_MAGIC         IMAGE_NT_OPTIONAL_HDR32_MAGIC
+//#define IMAGE_NT_OPTIONAL_HDR_MAGIC         IMAGE_NT_OPTIONAL_HDR32_MAGIC
 
-typedef struct _IMAGE_OPTIONAL_HEADER64 {
-    WORD        Magic;
-    BYTE        MajorLinkerVersion;
-    BYTE        MinorLinkerVersion;
-    DWORD       SizeOfCode;
-    DWORD       SizeOfInitializedData;
-    DWORD       SizeOfUninitializedData;
-    DWORD       AddressOfEntryPoint;
-    DWORD       BaseOfCode;
-    ULONGLONG   ImageBase;
-    DWORD       SectionAlignment;
-    DWORD       FileAlignment;
-    WORD        MajorOperatingSystemVersion;
-    WORD        MinorOperatingSystemVersion;
-    WORD        MajorImageVersion;
-    WORD        MinorImageVersion;
-    WORD        MajorSubsystemVersion;
-    WORD        MinorSubsystemVersion;
-    DWORD       Win32VersionValue;
-    DWORD       SizeOfImage;
-    DWORD       SizeOfHeaders;
-    DWORD       CheckSum;
-    WORD        Subsystem;
-    WORD        DllCharacteristics;
-    ULONGLONG   SizeOfStackReserve;
-    ULONGLONG   SizeOfStackCommit;
-    ULONGLONG   SizeOfHeapReserve;
-    ULONGLONG   SizeOfHeapCommit;
-    DWORD       LoaderFlags;
-    DWORD       NumberOfRvaAndSizes;
-    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
+//typedef struct _IMAGE_OPTIONAL_HEADER64 {
+//    WORD        Magic;
+//    BYTE        MajorLinkerVersion;
+//    BYTE        MinorLinkerVersion;
+//    DWORD       SizeOfCode;
+//    DWORD       SizeOfInitializedData;
+//    DWORD       SizeOfUninitializedData;
+//    DWORD       AddressOfEntryPoint;
+//    DWORD       BaseOfCode;
+//    ULONGLONG   ImageBase;
+//    DWORD       SectionAlignment;
+//    DWORD       FileAlignment;
+//    WORD        MajorOperatingSystemVersion;
+//    WORD        MinorOperatingSystemVersion;
+//    WORD        MajorImageVersion;
+//    WORD        MinorImageVersion;
+//    WORD        MajorSubsystemVersion;
+//    WORD        MinorSubsystemVersion;
+//    DWORD       Win32VersionValue;
+//    DWORD       SizeOfImage;
+//    DWORD       SizeOfHeaders;
+//    DWORD       CheckSum;
+//    WORD        Subsystem;
+//    WORD        DllCharacteristics;
+//    ULONGLONG   SizeOfStackReserve;
+//    ULONGLONG   SizeOfStackCommit;
+//    ULONGLONG   SizeOfHeapReserve;
+//    ULONGLONG   SizeOfHeapCommit;
+//    DWORD       LoaderFlags;
+//    DWORD       NumberOfRvaAndSizes;
+//    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+//} IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
 
-typedef struct _IMAGE_NT_HEADERS {
-    DWORD                 Signature;
-    IMAGE_FILE_HEADER     FileHeader;
-    IMAGE_OPTIONAL_HEADER OptionalHeader;
-} IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;
+//typedef struct _IMAGE_NT_HEADERS {
+//    DWORD                 Signature;
+//    IMAGE_FILE_HEADER     FileHeader;
+//    IMAGE_OPTIONAL_HEADER OptionalHeader;
+//} IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;
 
-typedef struct _IMAGE_NT_HEADERS64 {
-    DWORD Signature;
-    IMAGE_FILE_HEADER FileHeader;
-    IMAGE_OPTIONAL_HEADER64 OptionalHeader;
-} IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;
+//typedef struct _IMAGE_NT_HEADERS64 {
+//    DWORD Signature;
+//    IMAGE_FILE_HEADER FileHeader;
+//    IMAGE_OPTIONAL_HEADER64 OptionalHeader;
+//} IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;
 
 // IMAGE_FIRST_SECTION doesn't need 32/64 versions since the file header is the same either way.
 
-#define IMAGE_FIRST_SECTION( ntheader ) ((PIMAGE_SECTION_HEADER)        \
-((ULONG_PTR)ntheader +                                              \
-FIELD_OFFSET( IMAGE_NT_HEADERS, OptionalHeader ) +                 \
-((PIMAGE_NT_HEADERS)(ntheader))->FileHeader.SizeOfOptionalHeader   \
-))
+//#define IMAGE_FIRST_SECTION( ntheader ) ((PIMAGE_SECTION_HEADER)        \
+//((ULONG_PTR)ntheader +                                              \
+//FIELD_OFFSET( IMAGE_NT_HEADERS, OptionalHeader ) +                 \
+//((PIMAGE_NT_HEADERS)(ntheader))->FileHeader.SizeOfOptionalHeader   \
+//))
 
 // Subsystem Values
 
@@ -358,19 +249,6 @@ FIELD_OFFSET( IMAGE_NT_HEADERS, OptionalHeader ) +                 \
 //
 
 #define IMAGE_SIZEOF_SHORT_NAME              8
-
-typedef struct _IMAGE_SECTION_HEADER {
-    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME];
-    DWORD   VirtualSize;
-    DWORD   VirtualAddress;
-    DWORD   SizeOfRawData;
-    DWORD   PointerToRawData;
-    DWORD   PointerToRelocations;
-    DWORD   PointerToLinenumbers;
-    WORD    NumberOfRelocations;
-    WORD    NumberOfLinenumbers;
-    DWORD   Characteristics;
-} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 
 #define IMAGE_SIZEOF_SECTION_HEADER          40
 
@@ -434,29 +312,6 @@ typedef struct _IMAGE_SECTION_HEADER {
 // TLS Characteristic Flags
 //
 #define IMAGE_SCN_SCALE_INDEX                0x00000001  // Tls index is scaled
-
-//
-// Export Format
-//
-
-typedef struct _IMAGE_EXPORT_DIRECTORY {
-    DWORD   Characteristics;
-    DWORD   TimeDateStamp;
-    WORD    MajorVersion;
-    WORD    MinorVersion;
-    DWORD   Name;
-    DWORD   Base;
-    DWORD   NumberOfFunctions;
-    DWORD   NumberOfNames;
-    DWORD   AddressOfFunctions;     // RVA from base of image
-    DWORD   AddressOfNames;         // RVA from base of image
-    DWORD   AddressOfNameOrdinals;  // RVA from base of image
-} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
-
-typedef struct _IMAGE_BASE_RELOCATION {
-    DWORD   VirtualAddress;
-    DWORD   SizeOfBlock;
-} IMAGE_BASE_RELOCATION, *PIMAGE_BASE_RELOCATION;
 
 //
 // x64 processor relocation types.

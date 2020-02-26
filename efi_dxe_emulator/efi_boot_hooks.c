@@ -356,8 +356,6 @@ struct boot_hooks boot_hooks[] = {
     }
 };
 
-#pragma mark -
-
 int
 install_boot_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
 {
@@ -412,8 +410,6 @@ lookup_boot_services_table(int offset)
     return NULL;
 }
 
-#pragma mark -
-
 /*
  * EFI_TPL(EFIAPI * EFI_RAISE_TPL) (IN EFI_TPL NewTpl)
  */
@@ -446,8 +442,67 @@ hook_RestoreTPL(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
 static void
 hook_AllocatePages(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
 {
+    uc_err err = UC_ERR_OK;
+
+    static uint64_t current_pool_addr = EFI_HEAP_ADDRESS;
+
     LOG_UC_BACKTRACE(uc, "AllocatePages()");
-    /* XXX: this should be the same as AllocatePool() for our purposes */
+
+    uint64_t r_rcx = 0;     /* Type */
+    uint64_t r_rdx = 0;     /* MemoryType */
+    uint64_t r_r8 = 0;      /* Pages */
+    uint64_t r_r9 = 0;      /* Memory */
+
+    err = uc_reg_read(uc, UC_X86_REG_R8, &r_r8);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R8 register");
+    uint32_t Size = (uint32_t)r_r8 * 0x1000;
+    if (Size == 0)
+    {
+        ERROR_MSG("Request size to AllocatePages is zero bytes.");
+        /* return value */
+        uint64_t r_rax = EFI_INVALID_PARAMETER;
+        err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
+        VERIFY_UC_OPERATION_NORET(err, "Failed to read Unicorn register")
+            return;
+    }
+    DEBUG_MSG("Requested size to AllocatePages() is 0x%x pages", (uint32_t)r_r8);
+
+    /* Unicorn only accepts 4kb pages */
+    uint32_t remainder = 0;
+    /* we add the missing NULL byte */
+    remainder = Size % 4096;
+
+    if (remainder != 0)
+    {
+        /* add alignment */
+        /* this will most probably always be required */
+        Size += 4096 - remainder;
+        DEBUG_MSG("Size is now %d", Size);
+    }
+    /* "allocate" Unicorn memory inside our already allocated "heap" area */
+    uint64_t allocated_mem = current_pool_addr;
+    current_pool_addr += Size;
+
+    uint64_t Buffer = 0;
+    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
+    /*
+     * we need to allocate memory inside the Unicorn machine
+     * and set the pointer there
+     */
+    err = uc_mem_read(uc, r_r9, &Buffer, sizeof(Buffer));
+    VERIFY_UC_OPERATION_NORET(err, "Failed to read from Unicorn memory")
+        DEBUG_MSG("Buffer address 0x%llx 0x%llx", Buffer, r_r9);
+    err = uc_mem_write(uc, r_r9, &allocated_mem, sizeof(allocated_mem));
+    VERIFY_UC_OPERATION_NORET(err, "Failed to write to Unicorn memory")
+        err = uc_mem_read(uc, r_r9, &Buffer, sizeof(Buffer));
+    VERIFY_UC_OPERATION_NORET(err, "Failed to read from Unicorn memory")
+        DEBUG_MSG("Buffer address 0x%llx 0x%llx", Buffer, r_r9);
+
+    /* return value */
+    uint64_t r_rax = EFI_SUCCESS;
+    err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
 }
 
 /*
@@ -494,7 +549,7 @@ hook_AllocatePool(uc_engine *uc, uint64_t address, uint32_t size, void *user_dat
     
     LOG_UC_BACKTRACE(uc, "AllocatePool()");
 
-    __attribute__((unused)) uint64_t r_rcx = 0;     /* PoolType */
+    uint64_t r_rcx = 0;     /* PoolType */
     uint64_t r_rdx = 0;     /* Size */
     uint64_t r_r8 = 0;      /* Buffer */
     

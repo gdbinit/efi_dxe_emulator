@@ -68,3 +68,5 @@
 
 void print_unicode_string(CHAR16 *Source);
 char * get_guid_string(EFI_GUID *guid);
+char * strsep(char **stringp, const char *delim);
+size_t strlcpy(char* dst, const char* src, size_t siz);

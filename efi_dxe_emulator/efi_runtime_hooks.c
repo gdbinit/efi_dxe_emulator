@@ -177,8 +177,6 @@ struct runtime_hooks runtime_hooks[] = {
     }
 };
 
-#pragma mark -
-
 int
 install_runtime_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
 {
@@ -307,13 +305,13 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     uint64_t r_rdx = 0;     /* VendorGuid */
     uint64_t r_r8 = 0;      /* Attributes */
     uint64_t r_r9 = 0;      /* DataSize */
-    __attribute__((unused)) uint64_t r_data = 0;    /* Data */
+    uint64_t r_data = 0;    /* Data */
     
     /* XXX: max 256 wide chars */
     /* we have no idea about the length and it's residing on Unicorn memory */
     CHAR16 VariableName[256+1] = {0};
     EFI_GUID VendorGuid = {0};
-    __attribute__((unused)) uint32_t Attributes = 0;
+    uint32_t Attributes = 0;
     uint32_t DataSize = 0;
     uint64_t Data = 0;
 
@@ -581,9 +579,9 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     
     uint64_t r_rcx = 0;     /* VariableName */
     uint64_t r_rdx = 0;     /* VendorGuid */
-    __attribute__((unused)) uint64_t r_r8 = 0;      /* Attributes */
-    __attribute__((unused)) uint64_t r_r9 = 0;      /* DataSize */
-    __attribute__((unused)) uint64_t r_data = 0;    /* Data */
+    uint64_t r_r8 = 0;      /* Attributes */
+    uint64_t r_r9 = 0;      /* DataSize */
+    uint64_t r_data = 0;    /* Data */
     /* read VariableName location */
     err = uc_reg_read(uc, UC_X86_REG_RCX, &r_rcx);
     VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");

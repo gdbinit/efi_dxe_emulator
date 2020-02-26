@@ -69,7 +69,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#include <mman/sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
@@ -109,9 +109,7 @@ TAILQ_HEAD(unicorn_hooks_tailq, unicorn_hooks);
 
 struct unicorn_hooks_tailq g_hooks = TAILQ_HEAD_INITIALIZER(g_hooks);
 
-#pragma mark -
-#pragma mark Helper functions
-#pragma mark -
+#pragma region Helper functions
 
 /*
  * helper function to add a new Unicorn hook and bookkeep hooks in our internal structure
@@ -162,9 +160,9 @@ del_unicorn_hook(uc_engine *uc, int type, uint64_t begin, uint64_t end)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Hooks code
-#pragma mark -
+#pragma endregion
+
+#pragma region Hooks code
 
 /*
  * hook to deal with interrupts
@@ -296,3 +294,5 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
     DEBUG_MSG("Unmapped mem hit 0x%llx", address);
     return 0;
 }
+
+#pragma endregion

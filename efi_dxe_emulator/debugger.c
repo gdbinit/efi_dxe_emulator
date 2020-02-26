@@ -70,7 +70,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#include <mman/sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
@@ -89,6 +89,7 @@
 #include "capstone_utils.h"
 #include "unicorn_utils.h"
 #include "mem_utils.h"
+#include "string_ops.h"
 
 extern EFI_SYSTEM_TABLE g_efi_table;
 
@@ -98,9 +99,7 @@ int set_mem_cmd(const char *exp, uc_engine *uc);
 int print_guid_cmd(const char *exp, uc_engine *uc);
 int set_register_cmd(const char *exp, uc_engine *uc);
 
-#pragma mark -
-#pragma mark Functions to register the commands
-#pragma mark -
+#pragma region Functions to register the commands
 
 int
 register_debugger_cmds(uc_engine *uc)
@@ -114,9 +113,9 @@ register_debugger_cmds(uc_engine *uc)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Commands functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Commands functions
 
 int
 examine_mem_cmd(const char *exp, uc_engine *uc)
@@ -151,11 +150,11 @@ examine_mem_cmd(const char *exp, uc_engine *uc)
     expression = strsep(&local_exp, " ");
     /* extract target address */
     address = strsep(&local_exp, " ");
-    free(local_exp_ptr);
     
     if (expression == NULL || address == NULL)
     {
         ERROR_MSG("Missing arguments.");
+        free(local_exp_ptr);
         return 0;
     }
     
@@ -163,6 +162,7 @@ examine_mem_cmd(const char *exp, uc_engine *uc)
     if (errno == EINVAL || errno == ERANGE)
     {
         ERROR_MSG("Invalid argument(s).");
+        free(local_exp_ptr);
         return 0;
     }
 
@@ -170,8 +170,11 @@ examine_mem_cmd(const char *exp, uc_engine *uc)
     if (errno == EINVAL || errno == ERANGE)
     {
         ERROR_MSG("Invalid argument(s).");
+        free(local_exp_ptr);
         return 0;
     }
+
+    free(local_exp_ptr);
 
     unsigned char *buffer = my_malloc(total_bytes);
     uc_mem_read(uc, source_addr, buffer, total_bytes);
@@ -567,9 +570,9 @@ context_cmd(const char *exp, uc_engine *uc)
     return 0;
 }
 
-#pragma mark -
-#pragma mark Other functions
-#pragma mark -
+#pragma endregion
+
+#pragma region Other functions
 
 void
 print_x86_registers(uc_engine *uc)
@@ -614,3 +617,5 @@ print_x86_debug_registers(uc_engine *uc)
     fprintf(stdout, REGISTER_COLOR "  DR0:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR1:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR2:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR3:" ANSI_COLOR_RESET " 0x%016llx\n", state.__dr0, state.__dr1, state.__dr2, state.__dr3);
     fprintf(stdout, REGISTER_COLOR "  DR4:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR5:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR6:" ANSI_COLOR_RESET " 0x%016llx" REGISTER_COLOR "  DR7:" ANSI_COLOR_RESET " 0x%016llx\n", state.__dr4, state.__dr5, state.__dr6, state.__dr7);
 }
+
+#pragma endregion

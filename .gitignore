@@ -1,3 +1,9 @@
-xcuserdata/
-project.xcworkspace/
-
+x64/
+win32/
+Debug/
+Release/
+.vs/
+*.obj
+*.pdb
+*.suo
+*.vcxproj.user
