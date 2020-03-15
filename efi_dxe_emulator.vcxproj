@@ -115,22 +115,22 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="efi_dxe_emulator\breakpoints.c" />
-    <ClCompile Include="efi_dxe_emulator\capstone_utils.c" />
-    <ClCompile Include="efi_dxe_emulator\cmds.c" />
-    <ClCompile Include="efi_dxe_emulator\debugger.c" />
-    <ClCompile Include="efi_dxe_emulator\efi_boot_hooks.c" />
-    <ClCompile Include="efi_dxe_emulator\efi_runtime_hooks.c" />
-    <ClCompile Include="efi_dxe_emulator\global_cmds.c" />
-    <ClCompile Include="efi_dxe_emulator\loader.c" />
-    <ClCompile Include="efi_dxe_emulator\logging.c" />
-    <ClCompile Include="efi_dxe_emulator\main.c" />
-    <ClCompile Include="efi_dxe_emulator\mem_utils.c" />
-    <ClCompile Include="efi_dxe_emulator\nvram.c" />
-    <ClCompile Include="efi_dxe_emulator\protocols.c" />
-    <ClCompile Include="efi_dxe_emulator\string_ops.c" />
-    <ClCompile Include="efi_dxe_emulator\unicorn_hooks.c" />
-    <ClCompile Include="efi_dxe_emulator\unicorn_utils.c" />
+    <ClCompile Include="efi_dxe_emulator\breakpoints.cpp" />
+    <ClCompile Include="efi_dxe_emulator\capstone_utils.cpp" />
+    <ClCompile Include="efi_dxe_emulator\cmds.cpp" />
+    <ClCompile Include="efi_dxe_emulator\debugger.cpp" />
+    <ClCompile Include="efi_dxe_emulator\efi_boot_hooks.cpp" />
+    <ClCompile Include="efi_dxe_emulator\efi_runtime_hooks.cpp" />
+    <ClCompile Include="efi_dxe_emulator\global_cmds.cpp" />
+    <ClCompile Include="efi_dxe_emulator\loader.cpp" />
+    <ClCompile Include="efi_dxe_emulator\logging.cpp" />
+    <ClCompile Include="efi_dxe_emulator\main.cpp" />
+    <ClCompile Include="efi_dxe_emulator\mem_utils.cpp" />
+    <ClCompile Include="efi_dxe_emulator\nvram.cpp" />
+    <ClCompile Include="efi_dxe_emulator\protocols.cpp" />
+    <ClCompile Include="efi_dxe_emulator\string_ops.cpp" />
+    <ClCompile Include="efi_dxe_emulator\unicorn_hooks.cpp" />
+    <ClCompile Include="efi_dxe_emulator\unicorn_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="efi_dxe_emulator\breakpoints.h" />
