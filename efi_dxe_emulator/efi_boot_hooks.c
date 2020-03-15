@@ -129,8 +129,8 @@ static void hook_CreateEventEx(uc_engine *uc, uint64_t address, uint32_t size, v
 struct boot_hooks
 {
     char name[64];
-    void *hook;
     int offset;
+    void *hook;
 };
 
 struct boot_hooks boot_hooks[] = {

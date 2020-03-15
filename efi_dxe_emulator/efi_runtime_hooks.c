@@ -100,8 +100,8 @@ static void hook_QueryVariableInfo(uc_engine *uc, uint64_t address, uint32_t siz
 struct runtime_hooks
 {
     char name[64];
-    void *hook;
     int offset;
+    void *hook;
 };
 
 struct runtime_hooks runtime_hooks[] = {
