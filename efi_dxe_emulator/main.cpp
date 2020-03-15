@@ -138,7 +138,7 @@ my_ini_handler(void* user, const char* section, const char* name, const char* va
     }
     else if (strcmp(section, "protocols") == 0)
     {
-        struct config_protocols *new_entry = my_malloc(sizeof(struct config_protocols));
+        auto new_entry = static_cast<struct config_protocols *>(my_malloc(sizeof(struct config_protocols)));
         new_entry->path = strdup(value);
         TAILQ_INSERT_TAIL(&g_config.protos, new_entry, entries);
     }
@@ -248,7 +248,7 @@ main(int argc, const char * argv[])
     /* set a default history file to %USERPROFILE% if not configured in the ini */
     if (g_config.history_file == NULL)
     {
-        g_config.history_file = my_calloc(1, MAX_PATH+1);
+        g_config.history_file = static_cast<char *>(my_calloc(1, MAX_PATH+1));
         snprintf(g_config.history_file, MAX_PATH, "%s\\%s", getenv("USERPROFILE"), HISTORY_FILE);
     }
     
@@ -403,8 +403,11 @@ main(int argc, const char * argv[])
      * there isn't much to trace since the EFI services functions inside Unicorn are just a breakpoint
      * so we can return control to the emulator and emulate the functions
      */
-    err = add_unicorn_hook(uc, UC_HOOK_CODE, hook_code, EFI_SYSTEM_TABLE_ADDRESS, EFI_SYSTEM_TABLE_ADDRESS + EFI_SYSTEM_TABLE_SIZE);
-    VERIFY_UC_OPERATION_RET(err, EXIT_FAILURE, "Failed to add EFI services Unicorn code hook.");
+    if (add_unicorn_hook(uc, UC_HOOK_CODE, hook_code, EFI_SYSTEM_TABLE_ADDRESS, EFI_SYSTEM_TABLE_ADDRESS + EFI_SYSTEM_TABLE_SIZE) != 0)
+    {
+        ERROR_MSG("Failed to add EFI services Unicorn code hook.");
+        return EXIT_FAILURE;
+    }
     
     /* add breakpoint on entrypoint - we always start the emulator stopped on entrypoint */
     if (add_breakpoint(main_image->base_addr + main_image->entrypoint, 0, kPermBreakpoint) != 0)

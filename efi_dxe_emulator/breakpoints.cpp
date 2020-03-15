@@ -125,7 +125,7 @@ add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type)
         }
     }
     
-    struct breakpoint *new_entry = my_malloc(sizeof(struct breakpoint));
+    auto new_entry = static_cast<struct breakpoint *>(my_malloc(sizeof(struct breakpoint)));
     new_entry->address = target_addr;
     new_entry->length = target_len;
     new_entry->type = type;

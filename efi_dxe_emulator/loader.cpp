@@ -192,8 +192,8 @@ create_and_map_efi_system_table(uc_engine *uc)
     size_t total_boot_hooks = 0;
     install_boot_services(uc, boot_addr, &total_boot_hooks);
     
-    g_efi_table.RuntimeServices = (void*)(runtime_addr);
-    g_efi_table.BootServices = (void*)(boot_addr);
+    g_efi_table.RuntimeServices = (EFI_RUNTIME_SERVICES *)(runtime_addr);
+    g_efi_table.BootServices = (EFI_BOOT_SERVICES *)(boot_addr);
     
     err = uc_mem_write(uc, target_addr, (void*)&g_efi_table, sizeof(EFI_SYSTEM_TABLE));
     if (err != UC_ERR_OK)
@@ -342,7 +342,7 @@ load_image(char *target_file, int main)
     }
     buf_size = stat_buf.st_size;
     
-    struct bin_image *new_image = my_malloc(sizeof(struct bin_image));
+    auto new_image = static_cast<struct bin_image *>(my_malloc(sizeof(struct bin_image)));
     new_image->main = main;
     new_image->base_addr = 0;
     new_image->entrypoint = 0;
@@ -351,7 +351,7 @@ load_image(char *target_file, int main)
     new_image->tramp_end = 0;
     new_image->file_path = target_file;
     new_image->buf_size = buf_size;
-    new_image->buf = mmap(0, buf_size, PROT_READ, MAP_SHARED, fd, 0);
+    new_image->buf = static_cast<uint8_t *>(mmap(0, buf_size, PROT_READ, MAP_SHARED, fd, 0));
     if (new_image->buf == MAP_FAILED)
     {
         ERROR_MSG("Failed to mmap target file.");
@@ -541,7 +541,7 @@ fix_relocations(uc_engine *uc, struct bin_image *image)
 static int
 install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tramp_start, uint64_t *tramp_end)
 {
-    uint8_t shellcode[13] =
+    uint8_t shellcode[] =
     "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00"  // mov rax, 0x0
     "\xFF\xD0"                                  // call rax
     "\xCC";                                     // INT3 - not to be executed

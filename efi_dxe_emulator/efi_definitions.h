@@ -155,17 +155,17 @@ typedef INT64 INTN;
 #define EFI_WARN_WRITE_FAILURE    EFIWARN (3)
 #define EFI_WARN_BUFFER_TOO_SMALL EFIWARN (4)
 
-extern UINT8 _VerifySizeofBOOLEAN[(sizeof(BOOLEAN) == (1)) / (sizeof(BOOLEAN) == (1))];
-extern UINT8 _VerifySizeofINT8[(sizeof(INT8) == (1)) / (sizeof(INT8) == (1))];
-extern UINT8 _VerifySizeofUINT8[(sizeof(UINT8) == (1)) / (sizeof(UINT8) == (1))];
-extern UINT8 _VerifySizeofINT16[(sizeof(INT16) == (2)) / (sizeof(INT16) == (2))];
-extern UINT8 _VerifySizeofUINT16[(sizeof(UINT16) == (2)) / (sizeof(UINT16) == (2))];
-extern UINT8 _VerifySizeofINT32[(sizeof(INT32) == (4)) / (sizeof(INT32) == (4))];
-extern UINT8 _VerifySizeofUINT32[(sizeof(UINT32) == (4)) / (sizeof(UINT32) == (4))];
-extern UINT8 _VerifySizeofINT64[(sizeof(INT64) == (8)) / (sizeof(INT64) == (8))];
-extern UINT8 _VerifySizeofUINT64[(sizeof(UINT64) == (8)) / (sizeof(UINT64) == (8))];
-extern UINT8 _VerifySizeofCHAR8[(sizeof(CHAR8) == (1)) / (sizeof(CHAR8) == (1))];
-extern UINT8 _VerifySizeofCHAR16[(sizeof(CHAR16) == (2)) / (sizeof(CHAR16) == (2))];
+static_assert(sizeof(BOOLEAN) == 1);
+static_assert(sizeof(INT8) == 1);
+static_assert(sizeof(UINT8) == 1);
+static_assert(sizeof(INT16) == 2);
+static_assert(sizeof(UINT16) == 2);
+static_assert(sizeof(INT32) == 4);
+static_assert(sizeof(UINT32) == 4);
+static_assert(sizeof(INT64) == 8);
+static_assert(sizeof(UINT64) == 8);
+static_assert(sizeof(CHAR8) == 1);
+static_assert(sizeof(CHAR16) == 2);
 
 typedef UINT64 PHYSICAL_ADDRESS;
 
@@ -18901,7 +18901,7 @@ typedef struct tdTPM_PERMANENT_FLAGS{
     BOOLEAN TPMpost;
     BOOLEAN TPMpostLock;
     BOOLEAN FIPS;
-    BOOLEAN operator;
+    BOOLEAN Operator;
     BOOLEAN enableRevokeEK;
     BOOLEAN nvLocked;
     BOOLEAN readSRKPub;

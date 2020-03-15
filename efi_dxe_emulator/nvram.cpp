@@ -133,7 +133,7 @@ load_nvram(char *nvram_file)
     }
     
     g_nvram_buf_size = stat_buf.st_size;
-    if ((g_nvram_buf = mmap(0, g_nvram_buf_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
+    if ((g_nvram_buf = static_cast<uint8_t *>(mmap(0, g_nvram_buf_size, PROT_READ, MAP_SHARED, fd, 0))) == MAP_FAILED)
     {
         ERROR_MSG("Failed to mmap nvram file.");
         close(fd);
@@ -251,7 +251,7 @@ find_vss_var(uint8_t *store_buf, uint32_t store_size, CHAR16 *var_name, EFI_GUID
                     *content_size = var_header->DataSize;
                     if (out_buf != NULL)
                     {
-                        *out_buf = my_malloc(var_header->DataSize);
+                        *out_buf = static_cast<unsigned char *>(my_malloc(var_header->DataSize));
                         memcpy(*out_buf, (char*)var_header + sizeof(VSS_VARIABLE_HEADER) + var_header->NameSize, var_header->DataSize);
                     }
                     break;
@@ -310,7 +310,7 @@ dump_nvram_vars(void)
     TAILQ_FOREACH(entry, &g_nvram_vars, entries)
     {
         uint32_t length = StrLen(entry->name);
-        char *c_string = my_malloc(length+2);
+        auto c_string = static_cast<char *>(my_malloc(length+2));
         UnicodeStrToAsciiStr(entry->name, c_string);
         OUTPUT_MSG("\n-[ Variable: %s ]-", c_string);
         EFI_GUID *guid = &entry->guid;
@@ -393,7 +393,7 @@ retrieve_nvram_vars(void)
                             }
                             if (found == 0)
                             {
-                                struct nvram_variables *new_entry = my_malloc(sizeof(struct nvram_variables));
+                                auto new_entry = static_cast<struct nvram_variables *>(my_malloc(sizeof(struct nvram_variables)));
                                 memcpy(&new_entry->guid, &var_header->VendorGuid, sizeof(EFI_GUID));
                                 if (var_header->NameSize <= sizeof(new_entry->name))
                                 {
@@ -405,7 +405,7 @@ retrieve_nvram_vars(void)
                                 }
                                 new_entry->name_size = var_header->NameSize;
                                 new_entry->data_size = var_header->DataSize;
-                                new_entry->data = my_malloc(var_header->DataSize);
+                                new_entry->data = static_cast<uint8_t *>(my_malloc(var_header->DataSize));
                                 memcpy(new_entry->data, (char*)var_header + sizeof(VSS_VARIABLE_HEADER) + var_header->NameSize, var_header->DataSize);
                                 TAILQ_INSERT_TAIL(&g_nvram_vars, new_entry, entries);
                             }

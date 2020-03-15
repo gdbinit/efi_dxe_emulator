@@ -100,8 +100,8 @@ static void hook_QueryVariableInfo(uc_engine *uc, uint64_t address, uint32_t siz
 struct runtime_hooks
 {
     char name[64];
-    void *hook;
     int offset;
+    void *hook;
 };
 
 struct runtime_hooks runtime_hooks[] = {
@@ -196,7 +196,7 @@ install_runtime_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
     }
     
     /* each EFI service is just a return so the call returns cleanly */
-    unsigned char *ret_bytes = my_malloc(hook_size * array_size);
+    auto ret_bytes = static_cast<unsigned char *>(my_malloc(hook_size * array_size));
     memset(ret_bytes, 0xC3, hook_size * array_size);
     err = uc_mem_write(uc, hooks_addr, ret_bytes, hook_size * array_size);
     /* XXX: will leak ret_bytes but we will exit program anyway */
@@ -498,7 +498,7 @@ hook_GetNextVariableName(uc_engine *uc, uint64_t address, uint32_t size, void *u
         uint32_t VariableNameSize = 0;
         err = uc_mem_read(uc, r_rcx, &VariableNameSize, sizeof(VariableNameSize));
         VERIFY_UC_OPERATION_NORET(err, "Failed to read VariableNameSize")
-        VariableName = my_malloc(VariableNameSize);
+        VariableName = static_cast<CHAR16 *>(my_malloc(VariableNameSize));
         err = uc_mem_read(uc, r_rdx, VariableName, VariableNameSize);
         VERIFY_UC_OPERATION_NORET(err, "Failed to read VariableName")
         EFI_GUID VendorGuid = {0};

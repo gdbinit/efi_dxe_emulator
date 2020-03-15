@@ -165,25 +165,4 @@ typedef struct APPLE_FSYS_STORE_HEADER_ {
     UINT16  Size;       // Size of variable store
 } APPLE_FSYS_STORE_HEADER;
 
-// Apple Fsys entry format
-// UINT8 NameLength;
-// CHAR8 Name[];
-// UINT16 DataLength;
-// UINT8 Data[]
-// Store ends with a chunk named "EOF" without data
-// All free bytes in store are zeroed
-// Has CRC32 of the whole store without checksum field at the end
-
-
-struct VSS_APPLE_VARIABLE_HEADER {
-    uint16_t    StartId; /* 0x AA 0x 55 */
-    uint8_t     State;
-    uint8_t     : 8;
-    uint32_t    Attributes;
-    uint32_t    NameSize;
-    uint32_t    DataSize;
-    EFI_GUID    VendorGuid;
-    //    uint32_t    DataCrc32;
-};
-
 #pragma pack(pop)

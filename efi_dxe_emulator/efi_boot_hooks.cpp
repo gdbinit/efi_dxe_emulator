@@ -129,8 +129,8 @@ static void hook_CreateEventEx(uc_engine *uc, uint64_t address, uint32_t size, v
 struct boot_hooks
 {
     char name[64];
-    void *hook;
     int offset;
+    void *hook;
 };
 
 struct boot_hooks boot_hooks[] = {
@@ -374,7 +374,7 @@ install_boot_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
         *(uint64_t*)((char*)&boot_table + boot_hooks[i].offset) = (uint64_t)(hooks_addr + hook_size * i);
     }
 
-    unsigned char *ret_bytes = my_malloc(hook_size * array_size);
+    auto ret_bytes = static_cast<unsigned char *>(my_malloc(hook_size * array_size));
     memset(ret_bytes, 0xC3, hook_size * array_size);
     err = uc_mem_write(uc, hooks_addr, ret_bytes, hook_size * array_size);
     /* XXX: mem leak on ret_bytes but we will exit app anyway after this */
@@ -1371,7 +1371,7 @@ hook_CopyMem(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
     /* we have no memcpy inside Unicorn API
      * so we need to copyout source and then copyback to destination
      */
-    copyin = malloc(Length);
+    copyin = static_cast<unsigned char *>(malloc(Length));
     if (copyin == NULL)
     {
         ERROR_MSG("Failed to allocate space for copyin.");

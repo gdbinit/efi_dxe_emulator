@@ -103,7 +103,7 @@ find_next_instruction(uc_engine *uc, uint64_t src_addr, uint64_t *dst_addr, int 
     csh handle = 0;
     cs_insn *insn = NULL;
     size_t count = 0;
-    cs_err cserr = 0;
+    cs_err cserr = CS_ERR_OK;
     cs_mode mode = CS_MODE_64;
     cs_arch arch = CS_ARCH_X86;
     if ((cserr = cs_open(arch, mode, &handle)) != CS_ERR_OK)
@@ -326,7 +326,7 @@ print_dissassembly(uc_engine *uc, uint64_t addr)
     csh handle = 0;
     cs_insn *insn = NULL;
     size_t count = 0;
-    cs_err cserr = 0;
+    cs_err cserr = CS_ERR_OK;
     cs_mode mode = CS_MODE_64;
     cs_arch arch = CS_ARCH_X86;
     if ( (cserr = cs_open(arch, mode, &handle)) != CS_ERR_OK )

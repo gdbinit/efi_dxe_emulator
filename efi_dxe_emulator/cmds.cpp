@@ -209,7 +209,7 @@ add_user_cmd(char *name, char *shortcut, int (*fun)(const char*, uc_engine *), c
         }
     }
     
-    struct cmd_list *new_cmd = my_malloc(sizeof(struct cmd_list));    
+    auto new_cmd = static_cast<struct cmd_list *>(my_malloc(sizeof(struct cmd_list)));    
     new_cmd->name = name;
     new_cmd->name_len = strlen(name);
     new_cmd->function = fun;

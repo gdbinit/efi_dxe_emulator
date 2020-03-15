@@ -142,7 +142,7 @@ void
 print_unicode_string(CHAR16 *Source)
 {
     uint32_t length = StrSize(Source);
-    char *string_to_print = my_malloc(length);
+    auto string_to_print = static_cast<char *>(my_malloc(length));
     UnicodeStrToAsciiStr(Source, string_to_print);
     OUTPUT_MSG("%s", string_to_print);
     free(string_to_print);
