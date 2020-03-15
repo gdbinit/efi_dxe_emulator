@@ -156,7 +156,7 @@ write_serial_number(uc_engine *uc, char *serial_number)
     /* we need to add two digits, 0x20 and 0xFF (serial always ends in 0xFF (end marker?)) */
     serial_length += 3;
     
-    char *serial_to_write = my_calloc(1, serial_length);
+    auto serial_to_write = static_cast<char *>(my_calloc(1, serial_length));
     snprintf(serial_to_write, serial_length, "%s\x20\xFF", serial_number);
     
     err = uc_mem_write(uc, 0xffffff08, serial_to_write, serial_length-1);

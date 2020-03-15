@@ -176,7 +176,7 @@ examine_mem_cmd(const char *exp, uc_engine *uc)
 
     free(local_exp_ptr);
 
-    unsigned char *buffer = my_malloc(total_bytes);
+    auto buffer = static_cast<unsigned char *>(my_malloc(total_bytes));
     uc_mem_read(uc, source_addr, buffer, total_bytes);
 
     /* output data in hex and characters if possible */
@@ -289,7 +289,7 @@ examine_register_cmd(const char *exp, uc_engine *uc)
     err = uc_reg_read(uc, target_register, &target_memory_addr);
     VERIFY_UC_OPERATION_RET(err, 0, "Failed to read register");
     
-    unsigned char *buffer = my_malloc(total_bytes);    
+    auto buffer = static_cast<unsigned char *>(my_malloc(total_bytes));
     err = uc_mem_read(uc, target_memory_addr, buffer, total_bytes);
     VERIFY_UC_OPERATION_RET(err, 0, "Failed to read memory at address 0x%llx", target_memory_addr);
     

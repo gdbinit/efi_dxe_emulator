@@ -119,7 +119,7 @@ int
 add_unicorn_hook(uc_engine *uc, int type, void *callback, uint64_t begin, uint64_t end)
 {
     struct unicorn_hooks *new_hook = NULL;
-    new_hook = my_malloc(sizeof(struct unicorn_hooks));
+    new_hook = static_cast<struct unicorn_hooks *>(my_malloc(sizeof(struct unicorn_hooks)));
     new_hook->begin = begin;
     new_hook->end = end;
     new_hook->type = type;

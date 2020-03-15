@@ -103,7 +103,7 @@ add_protocol(EFI_GUID *guid, uint64_t iface)
         }
     }
     
-    struct protocols_list *new_entry = my_malloc(sizeof(struct protocols_list));    
+    auto new_entry = static_cast<struct protocols_list *>(my_malloc(sizeof(struct protocols_list)));
     memcpy(&new_entry->guid, guid, sizeof(EFI_GUID));
     new_entry->iface = iface;
     TAILQ_INSERT_TAIL(&g_installed_protocols, new_entry, entries);

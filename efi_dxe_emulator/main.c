@@ -138,7 +138,7 @@ my_ini_handler(void* user, const char* section, const char* name, const char* va
     }
     else if (strcmp(section, "protocols") == 0)
     {
-        struct config_protocols *new_entry = my_malloc(sizeof(struct config_protocols));
+        auto new_entry = static_cast<struct config_protocols *>(my_malloc(sizeof(struct config_protocols)));
         new_entry->path = strdup(value);
         TAILQ_INSERT_TAIL(&g_config.protos, new_entry, entries);
     }
@@ -248,7 +248,7 @@ main(int argc, const char * argv[])
     /* set a default history file to %USERPROFILE% if not configured in the ini */
     if (g_config.history_file == NULL)
     {
-        g_config.history_file = my_calloc(1, MAX_PATH+1);
+        g_config.history_file = static_cast<char *>(my_calloc(1, MAX_PATH+1));
         snprintf(g_config.history_file, MAX_PATH, "%s\\%s", getenv("USERPROFILE"), HISTORY_FILE);
     }
     
