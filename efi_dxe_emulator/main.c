@@ -403,8 +403,11 @@ main(int argc, const char * argv[])
      * there isn't much to trace since the EFI services functions inside Unicorn are just a breakpoint
      * so we can return control to the emulator and emulate the functions
      */
-    err = add_unicorn_hook(uc, UC_HOOK_CODE, hook_code, EFI_SYSTEM_TABLE_ADDRESS, EFI_SYSTEM_TABLE_ADDRESS + EFI_SYSTEM_TABLE_SIZE);
-    VERIFY_UC_OPERATION_RET(err, EXIT_FAILURE, "Failed to add EFI services Unicorn code hook.");
+    if (add_unicorn_hook(uc, UC_HOOK_CODE, hook_code, EFI_SYSTEM_TABLE_ADDRESS, EFI_SYSTEM_TABLE_ADDRESS + EFI_SYSTEM_TABLE_SIZE) != 0)
+    {
+        ERROR_MSG("Failed to add EFI services Unicorn code hook.");
+        return EXIT_FAILURE;
+    }
     
     /* add breakpoint on entrypoint - we always start the emulator stopped on entrypoint */
     if (add_breakpoint(main_image->base_addr + main_image->entrypoint, 0, kPermBreakpoint) != 0)
