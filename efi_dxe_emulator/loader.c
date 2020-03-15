@@ -541,7 +541,7 @@ fix_relocations(uc_engine *uc, struct bin_image *image)
 static int
 install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tramp_start, uint64_t *tramp_end)
 {
-    uint8_t shellcode[13] =
+    uint8_t shellcode[] =
     "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00"  // mov rax, 0x0
     "\xFF\xD0"                                  // call rax
     "\xCC";                                     // INT3 - not to be executed
