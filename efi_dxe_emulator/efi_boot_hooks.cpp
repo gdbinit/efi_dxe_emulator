@@ -80,6 +80,7 @@
 #include "unicorn_macros.h"
 #include "unicorn_utils.h"
 #include "mem_utils.h"
+#include "guids.h"
 
 static void hook_RaiseTPL(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 static void hook_RestoreTPL(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
@@ -1227,8 +1228,9 @@ hook_LocateProtocol(uc_engine *uc, uint64_t address, uint32_t size, void *user_d
     VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register")
     err = uc_mem_read(uc, r_rcx, &Protocol, sizeof(EFI_GUID));
     VERIFY_UC_OPERATION_NORET(err, "Failed to read protocol GUID")
-    
-    DEBUG_MSG("Request to LocateProtocol with GUID %s", get_guid_string(&Protocol))
+
+    DEBUG_MSG("Request to LocateProtocol with GUID %s (%s)",
+        guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
 
     /* read Registration */
     err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);

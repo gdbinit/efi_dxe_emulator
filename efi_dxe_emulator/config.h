@@ -67,6 +67,8 @@
 
 /* default will be located at $HOME path */
 #define HISTORY_FILE    ".efi_emulator_history"
+/* relative to CWD */
+#define GUIDS_FILE      "guids.csv"
 
 #define HOOK_SIZE                            1
 /* change to match the base address of your DXE driver */
@@ -98,6 +100,7 @@ struct configuration
 {
     char *target_file;
     char *nvram_file;
+    char *guids_file;
     char *history_file;
     char *serial_number;
     struct config_protocols_tailq protos;

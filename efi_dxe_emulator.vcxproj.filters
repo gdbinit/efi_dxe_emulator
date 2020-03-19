@@ -63,6 +63,9 @@
     <ClCompile Include="efi_dxe_emulator\unicorn_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="efi_dxe_emulator\guids.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="efi_dxe_emulator\breakpoints.h">
@@ -126,6 +129,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\sys\queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efi_dxe_emulator\guids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

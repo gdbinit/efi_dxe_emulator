@@ -94,6 +94,7 @@
 #include "unicorn_macros.h"
 #include "unicorn_utils.h"
 #include "mem_utils.h"
+#include "guids.h"
 
 extern struct bin_images_tailq g_images;
 struct configuration g_config;
@@ -126,6 +127,10 @@ my_ini_handler(void* user, const char* section, const char* name, const char* va
         else if (strcmp(name, "nvram") == 0)
         {
             g_config.nvram_file = strdup(value);
+        }
+        else if (strcmp(name, "guids") == 0)
+        {
+            g_config.guids_file = strdup(value);
         }
         else if (strcmp(name, "history") == 0)
         {
@@ -170,6 +175,7 @@ main(int argc, const char * argv[])
         { "target", required_argument, NULL, 't' },
         { "ini", required_argument, NULL, 'i' },
         { "nvram", required_argument, NULL, 'n' },
+        { "guids", required_argument, NULL, 'g' },
         { NULL, 0, NULL, 0 }
     };
     int option_index = 0;
@@ -177,11 +183,12 @@ main(int argc, const char * argv[])
     
     char *target_file = NULL;
     char *nvram_file = NULL;
+    char* guids_file = NULL;
     int verbose_mode = 0;
     char *ini_file = NULL;
     
     // process command line options
-    while ((c = getopt_long (argc, (char * const*)argv, "vt:n:i:", long_options, &option_index)) != -1)
+    while ((c = getopt_long (argc, (char * const*)argv, "vt:n:g:i:", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -193,6 +200,9 @@ main(int argc, const char * argv[])
                 break;
             case 'n':
                 nvram_file = optarg;
+                break;
+            case 'g':
+                guids_file = optarg;
                 break;
             case 'i':
                 ini_file = optarg;
@@ -219,6 +229,7 @@ main(int argc, const char * argv[])
         /* set config values */
         g_config.target_file = target_file;
         g_config.nvram_file = nvram_file;
+        g_config.guids_file = guids_file;
     }
     else
     {
@@ -252,6 +263,12 @@ main(int argc, const char * argv[])
         snprintf(g_config.history_file, MAX_PATH, "%s\\%s", getenv("USERPROFILE"), HISTORY_FILE);
     }
     
+    /* use a default GUIDs file */
+    if (g_config.guids_file == NULL)
+    {
+        g_config.guids_file = GUIDS_FILE;
+    }
+
     /* and now start the party */
 
     uc_engine *uc = NULL;
@@ -305,6 +322,13 @@ main(int argc, const char * argv[])
     {
         ERROR_MSG("Failed to load NVRAM file.");
         return EXIT_FAILURE;
+    }
+
+    OUTPUT_MSG("[+] Loading GUIDs");
+    if (load_guids(g_config.guids_file) != 0)
+    {
+        WARNING_MSG("Failed to load GUIDs file.");
+        /* Not fatal, so don't exit. */
     }
     
     /* 
