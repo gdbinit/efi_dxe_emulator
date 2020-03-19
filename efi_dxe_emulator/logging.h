@@ -81,5 +81,6 @@ void set_log_level(int level);
 #define EFLAGS_COLOR    ANSI_COLOR_RED
 
 #define DEBUG_MSG(fmt, ...) log_debug("[DEBUG] " fmt "\n", ## __VA_ARGS__);
-#define ERROR_MSG(fmt, ...) fprintf(stderr, "[ERROR] " fmt " @ line %d of %s() \n", ## __VA_ARGS__, __LINE__, __func__);
+#define WARNING_MSG(fmt, ...) fprintf(stderr, ANSI_COLOR_YELLOW "[WARNING] " fmt " @ line %d of %s() \n" ANSI_COLOR_RESET, ## __VA_ARGS__, __LINE__, __func__);
+#define ERROR_MSG(fmt, ...) fprintf(stderr, ANSI_COLOR_RED "[ERROR] " fmt " @ line %d of %s() \n" ANSI_COLOR_RESET, ## __VA_ARGS__, __LINE__, __func__);
 #define OUTPUT_MSG(fmt, ...) fprintf(stdout, fmt " \n", ## __VA_ARGS__);
