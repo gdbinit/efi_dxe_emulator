@@ -149,17 +149,6 @@ print_unicode_string(CHAR16 *Source)
 }
 
 char *
-get_guid_string(EFI_GUID *guid)
-{
-    static char guid_str[37] = {0};
-    snprintf(guid_str, sizeof(guid_str), "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-             guid->Data1, guid->Data2, guid->Data3,
-             guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
-             guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
-    return guid_str;
-}
-
-char *
 strsep(char **stringp, const char *delim)
 {
     char* begin, * end;

@@ -78,6 +78,7 @@
 #include "unicorn_hooks.h"
 #include "string_ops.h"
 #include "mem_utils.h"
+#include "guids.h"
 
 struct protocols_list
 {
@@ -120,7 +121,7 @@ remove_protocol(void)
 int
 locate_protocol(EFI_GUID *guid, uint64_t *iface)
 {
-    DEBUG_MSG("Trying to locate protocol %s", get_guid_string(guid));
+    DEBUG_MSG("Trying to locate protocol %s", guid_to_string(guid));
     struct protocols_list *tmp_entry = 0;
     TAILQ_FOREACH(tmp_entry, &g_installed_protocols, entries)
     {
