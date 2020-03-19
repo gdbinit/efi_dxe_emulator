@@ -20,7 +20,7 @@ PS> .\vcpkg integrate install
 
 2. Install required dependencies:
 ```
-PS> .\vcpkg install capstone[x86] getopt-win32 inih linenoise-ng mman unicorn
+PS> .\vcpkg install capstone[x86] getopt-win32 inih linenoise-ng mman unicorn fast-cpp-csv-parser
 ```
 
 Note: for 64-bit builds just append the suffix `:x64-windows` to each package name (e.g. `capstone:x64-windows`).
