@@ -15,52 +15,52 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="efi_dxe_emulator\breakpoints.c">
+    <ClCompile Include="efi_dxe_emulator\breakpoints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\capstone_utils.c">
+    <ClCompile Include="efi_dxe_emulator\capstone_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\cmds.c">
+    <ClCompile Include="efi_dxe_emulator\cmds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\debugger.c">
+    <ClCompile Include="efi_dxe_emulator\debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\efi_boot_hooks.c">
+    <ClCompile Include="efi_dxe_emulator\efi_boot_hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\efi_runtime_hooks.c">
+    <ClCompile Include="efi_dxe_emulator\efi_runtime_hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\global_cmds.c">
+    <ClCompile Include="efi_dxe_emulator\global_cmds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\loader.c">
+    <ClCompile Include="efi_dxe_emulator\loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\logging.c">
+    <ClCompile Include="efi_dxe_emulator\logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\main.c">
+    <ClCompile Include="efi_dxe_emulator\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\mem_utils.c">
+    <ClCompile Include="efi_dxe_emulator\mem_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\nvram.c">
+    <ClCompile Include="efi_dxe_emulator\nvram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\protocols.c">
+    <ClCompile Include="efi_dxe_emulator\protocols.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\string_ops.c">
+    <ClCompile Include="efi_dxe_emulator\string_ops.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\unicorn_hooks.c">
+    <ClCompile Include="efi_dxe_emulator\unicorn_hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efi_dxe_emulator\unicorn_utils.c">
+    <ClCompile Include="efi_dxe_emulator\unicorn_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
