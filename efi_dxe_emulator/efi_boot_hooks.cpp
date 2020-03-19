@@ -782,10 +782,7 @@ hook_InstallProtocolInterface(uc_engine *uc, uint64_t address, uint32_t size, vo
     }
     
     EFI_GUID *guid = &Protocol;
-    OUTPUT_MSG("Requested Protocol: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-               guid->Data1, guid->Data2, guid->Data3,
-               guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
-               guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+    OUTPUT_MSG("Requested Protocol: %s (%s)", guid_to_string(guid), get_guid_friendly_name(*guid));
     
     if (r_r8 != EFI_NATIVE_INTERFACE)
     {
