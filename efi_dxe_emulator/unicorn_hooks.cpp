@@ -295,4 +295,10 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
     return 0;
 }
 
+bool
+hook_invalid_insn(uc_engine* uc, void* user_data)
+{
+    return false;
+}
+
 #pragma endregion

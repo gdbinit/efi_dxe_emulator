@@ -373,6 +373,13 @@ main(int argc, const char * argv[])
         ERROR_MSG("Failed to add unmapped memory hook.");
         return EXIT_FAILURE;
     }
+
+    /* add a hook to deal with invalid instructions exceptions */
+    if (add_unicorn_hook(uc, UC_HOOK_INSN_INVALID, hook_invalid_insn, 1, 0) != 0)
+    {
+        ERROR_MSG("Failed to add invalid instruction hook.");
+        return EXIT_FAILURE;
+    }
     
     uint64_t total_images = 0;
     struct bin_image *tmp_image = NULL;
