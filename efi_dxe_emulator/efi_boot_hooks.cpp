@@ -853,6 +853,17 @@ hook_HandleProtocol(uc_engine *uc, uint64_t address, uint32_t size, void *user_d
     
     LOG_UC_BACKTRACE(uc, "HandleProtocol()");
     
+    uint64_t r_rdx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX value");
+
+    EFI_GUID Protocol = { 0 };
+    err = uc_mem_read(uc, r_rdx, &Protocol, sizeof(Protocol));
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read memory at RDX");
+
+    OUTPUT_MSG("Requested Protocol: %s (%s)",
+        guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
