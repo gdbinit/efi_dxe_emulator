@@ -68,6 +68,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <vector>
 
 #include "pe_definitions.h"
 #include "efi_definitions.h"
@@ -1269,6 +1270,60 @@ out:
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
 }
 
+static void
+print_InstallMultipleProtocolInterfaces_args(uc_engine* uc)
+{
+    std::vector<uint64_t> protocol_guids_addrs;
+
+    /* The 1st protocol GUID is hosted in the RDX register */
+    uint64_t r_rdx;
+    uc_err err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX register");
+
+    protocol_guids_addrs.push_back(r_rdx);
+
+    /* The 2nd protocol GUID is hosted in the R9 register */
+    uint64_t r_r9;
+    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
+
+    /* The 2nd protocol onwards are optional */
+    if (r_r9 == 0)
+    {
+        goto DoPrint;
+    }
+
+    protocol_guids_addrs.push_back(r_r9);
+
+    /* Now handle the stack-based parameters */
+    uint64_t r_rsp;
+    err = uc_reg_read(uc, UC_X86_REG_RSP, &r_rsp);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read memory at RSP");
+
+    uint64_t stack_param;
+    uint64_t stack_addr = r_rsp + 6 * sizeof(uint64_t);
+    uc_mem_read(uc, stack_addr, &stack_param, sizeof(stack_param));
+
+    while (stack_param)
+    {
+        protocol_guids_addrs.push_back(stack_param);
+        /* Advance to the next protocol GUID */
+        stack_addr += 2 * sizeof(uint64_t);
+        uc_mem_read(uc, stack_addr, &stack_param, sizeof(stack_param));
+    }
+
+DoPrint:
+    for (const auto& guid_addr : protocol_guids_addrs)
+    {
+        EFI_GUID Protocol = {0};
+        err = uc_mem_read(uc, guid_addr, &Protocol, sizeof(Protocol));
+        VERIFY_UC_OPERATION_VOID(err, "Failed to read memory");
+
+        DEBUG_MSG("Installed protocol: %s (%s)",
+            guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
+    }
+}
+
 /*
  * EFI_STATUS(EFIAPI * EFI_INSTALL_MULTIPLE_PROTOCOL_INTERFACES) (IN OUT EFI_HANDLE *Handle,...)
  */
@@ -1278,8 +1333,9 @@ hook_InstallMultipleProtocolInterfaces(uc_engine *uc, uint64_t address, uint32_t
     uc_err err = UC_ERR_OK;
     
     LOG_UC_BACKTRACE(uc, "InstallMultipleProtocolInterfaces()");
-    
-    /* return value */
+    print_InstallMultipleProtocolInterfaces_args(uc);
+
+    /* return value */  
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
