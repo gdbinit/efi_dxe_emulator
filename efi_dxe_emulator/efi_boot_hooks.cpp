@@ -851,6 +851,7 @@ static void
 hook_HandleProtocol(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
 {
     uc_err err = UC_ERR_OK;
+    uint64_t ret = EFI_SUCCESS;
     
     LOG_UC_BACKTRACE(uc, "HandleProtocol()");
     
@@ -865,9 +866,18 @@ hook_HandleProtocol(uc_engine *uc, uint64_t address, uint32_t size, void *user_d
     OUTPUT_MSG("Requested Protocol: %s (%s)",
         guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
 
+    uint64_t t_interface = 0;
+    if (locate_protocol(&Protocol, &t_interface) != 0)
+    {
+        ret = EFI_NOT_FOUND;
+        goto out;
+    }
+
+    ret = EFI_SUCCESS;
+
+out:
     /* return value */
-    uint64_t r_rax = EFI_SUCCESS;
-    err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
+    err = uc_reg_write(uc, UC_X86_REG_RAX, &ret);
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
 }
 
