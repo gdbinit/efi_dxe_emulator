@@ -1219,7 +1219,19 @@ hook_LocateHandleBuffer(uc_engine *uc, uint64_t address, uint32_t size, void *us
     uc_err err = UC_ERR_OK;
     
     LOG_UC_BACKTRACE(uc, "LocateHandleBuffer()");
+
+    /* read Protocol location */
+    uint64_t r_rdx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");
     
+    EFI_GUID Protocol = { 0 };
+    err = uc_mem_read(uc, r_rdx, &Protocol, sizeof(EFI_GUID));
+    VERIFY_UC_OPERATION_NORET(err, "Failed to read protocol GUID");
+
+    DEBUG_MSG("Request to LocateHandleBuffer with GUID %s (%s)",
+        guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
