@@ -83,6 +83,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>Ws2_32.lib;Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -100,6 +101,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Ws2_32.lib;Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,12 +109,18 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Ws2_32.lib;Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Ws2_32.lib;Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="efi_dxe_emulator\breakpoints.cpp" />
@@ -130,6 +138,8 @@
     <ClCompile Include="efi_dxe_emulator\nvram.cpp" />
     <ClCompile Include="efi_dxe_emulator\protocols.cpp" />
     <ClCompile Include="efi_dxe_emulator\string_ops.cpp" />
+    <ClCompile Include="efi_dxe_emulator\sync.cpp" />
+    <ClCompile Include="efi_dxe_emulator\tunnel.cpp" />
     <ClCompile Include="efi_dxe_emulator\unicorn_hooks.cpp" />
     <ClCompile Include="efi_dxe_emulator\unicorn_utils.cpp" />
   </ItemGroup>
@@ -151,6 +161,8 @@
     <ClInclude Include="efi_dxe_emulator\pe_definitions.h" />
     <ClInclude Include="efi_dxe_emulator\protocols.h" />
     <ClInclude Include="efi_dxe_emulator\string_ops.h" />
+    <ClInclude Include="efi_dxe_emulator\sync.h" />
+    <ClInclude Include="efi_dxe_emulator\tunnel.h" />
     <ClInclude Include="efi_dxe_emulator\unicorn_hooks.h" />
     <ClInclude Include="efi_dxe_emulator\unicorn_macros.h" />
     <ClInclude Include="efi_dxe_emulator\unicorn_utils.h" />
