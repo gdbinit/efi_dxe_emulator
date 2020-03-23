@@ -448,10 +448,10 @@ main(int argc, const char * argv[])
         return EXIT_FAILURE;
     }
     
-    OUTPUT_MSG("[+] Synching with WinDBG...");
+    OUTPUT_MSG("[+] Synching with IDA...");
     if (sync(uc, g_config.target_file) != 0)
     {
-        WARNING_MSG("Failed to sync with WinDBG.");
+        WARNING_MSG("Failed to sync with IDA.");
         /* Non-fatal, don't exit */
     }
 

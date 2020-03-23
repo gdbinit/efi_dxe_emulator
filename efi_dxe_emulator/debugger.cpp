@@ -557,8 +557,9 @@ print_guid_cmd(const char *exp, uc_engine *uc)
 int
 context_cmd(const char *exp, uc_engine *uc)
 {
-    // Sync with WinDBG
+    // Sync with IDA
     UpdateState(uc);
+
     print_x86_registers(uc);
 #if defined(DISPLAY_DEBUG_REGISTERS) && DISPLAY_DEBUG_REGISTERS == 1
     print_x86_debug_registers(uc);
