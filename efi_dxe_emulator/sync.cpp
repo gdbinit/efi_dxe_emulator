@@ -69,14 +69,13 @@ UpdateState(uc_engine *uc)
 //        }
 //    }
 //
-    HRESULT hRes = TunnelSend("[notice]{\"type\":\"module\",\"path\":\"%s\"}\n", "PcdDxe");
-    hRes = TunnelSend("[sync]{\"type\":\"loc\",\"base\":%llu,\"offset\":%llu}\n", g_Base, g_Offset);
+    HRESULT hRes = TunnelSend("[sync]{\"type\":\"loc\",\"base\":%llu,\"offset\":%llu}\n", g_Base, g_Offset);
     return (SUCCEEDED(hRes)) ? 0 : -1;
 //    return hRes;
 }
 
 int
-sync(uc_engine *uc)
+sync(uc_engine *uc, const char * target_file)
 {
     HRESULT hRes = S_OK;
     PCSTR Host = g_DefaultHost;
@@ -98,6 +97,9 @@ sync(uc_engine *uc)
     }
 
     DEBUG_MSG("[sync] sync is now enabled with host %s\n", Host);
+
+    hRes = TunnelSend("[notice]{\"type\":\"module\",\"path\":\"%s\"}\n", target_file);
+
     UpdateState(uc);
 
 Exit:

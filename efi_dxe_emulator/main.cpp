@@ -449,7 +449,7 @@ main(int argc, const char * argv[])
     }
     
     OUTPUT_MSG("[+] Synching with WinDBG...");
-    if (sync(uc) != 0)
+    if (sync(uc, g_config.target_file) != 0)
     {
         WARNING_MSG("Failed to sync with WinDBG.");
         /* Non-fatal, don't exit */
