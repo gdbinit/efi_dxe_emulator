@@ -95,6 +95,7 @@
 #include "unicorn_utils.h"
 #include "mem_utils.h"
 #include "guids.h"
+#include "sync.h"
 
 extern struct bin_images_tailq g_images;
 struct configuration g_config;
@@ -447,6 +448,13 @@ main(int argc, const char * argv[])
         return EXIT_FAILURE;
     }
     
+    OUTPUT_MSG("[+] Synching with WinDBG...");
+    if (sync(uc) != 0)
+    {
+        WARNING_MSG("Failed to sync with WinDBG.");
+        /* Non-fatal, don't exit */
+    }
+
     OUTPUT_MSG("[+] Starting main image emulation...");
     err = uc_emu_start(uc, main_image->tramp_start, main_image->tramp_end, 0, 0);
     VERIFY_UC_OPERATION_RET(err, EXIT_FAILURE, "Failed to start Unicorn emulation");
