@@ -1300,60 +1300,6 @@ out:
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
 }
 
-static void
-print_InstallMultipleProtocolInterfaces_args(uc_engine* uc)
-{
-    std::vector<uint64_t> protocol_guids_addrs;
-
-    /* The 1st protocol GUID is hosted in the RDX register */
-    uint64_t r_rdx;
-    uc_err err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
-    VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX register");
-
-    protocol_guids_addrs.push_back(r_rdx);
-
-    /* The 2nd protocol GUID is hosted in the R9 register */
-    uint64_t r_r9;
-    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
-    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
-
-    /* The 2nd protocol onwards are optional */
-    if (r_r9 == 0)
-    {
-        goto DoPrint;
-    }
-
-    protocol_guids_addrs.push_back(r_r9);
-
-    /* Now handle the stack-based parameters */
-    uint64_t r_rsp;
-    err = uc_reg_read(uc, UC_X86_REG_RSP, &r_rsp);
-    VERIFY_UC_OPERATION_VOID(err, "Failed to read memory at RSP");
-
-    uint64_t stack_param;
-    uint64_t stack_addr = r_rsp + 6 * sizeof(uint64_t);
-    uc_mem_read(uc, stack_addr, &stack_param, sizeof(stack_param));
-
-    while (stack_param)
-    {
-        protocol_guids_addrs.push_back(stack_param);
-        /* Advance to the next protocol GUID */
-        stack_addr += 2 * sizeof(uint64_t);
-        uc_mem_read(uc, stack_addr, &stack_param, sizeof(stack_param));
-    }
-
-DoPrint:
-    for (const auto& guid_addr : protocol_guids_addrs)
-    {
-        EFI_GUID Protocol = {0};
-        err = uc_mem_read(uc, guid_addr, &Protocol, sizeof(Protocol));
-        VERIFY_UC_OPERATION_VOID(err, "Failed to read memory");
-
-        DEBUG_MSG("Installed protocol: %s (%s)",
-            guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
-    }
-}
-
 /*
  * EFI_STATUS(EFIAPI * EFI_INSTALL_MULTIPLE_PROTOCOL_INTERFACES) (IN OUT EFI_HANDLE *Handle,...)
  */
@@ -1363,7 +1309,76 @@ hook_InstallMultipleProtocolInterfaces(uc_engine *uc, uint64_t address, uint32_t
     uc_err err = UC_ERR_OK;
     
     LOG_UC_BACKTRACE(uc, "InstallMultipleProtocolInterfaces()");
-    print_InstallMultipleProtocolInterfaces_args(uc);
+
+    std::vector<std::pair<uint64_t, uint64_t>> protos;
+    uint64_t r_rsp = 0;
+    uint64_t stack_param;
+
+    /* The 1st protocol GUID is hosted in the RDX register */
+    uint64_t r_rdx;
+    err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX register");
+
+    /* The corresponding interface address is in the R8 register */
+    uint64_t r_r8;
+    err = uc_reg_read(uc, UC_X86_REG_R8, &r_r8);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R8 register");
+
+    protos.push_back({ r_rdx, r_r8 });
+
+    /* The 2nd protocol GUID is hosted in the R9 register */
+    uint64_t r_r9;
+    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
+
+    /* The 2nd protocol onwards are optional */
+    if (r_r9 == 0)
+    {
+        goto out;
+    }
+    else
+    {
+        err = uc_reg_read(uc, UC_X86_REG_RSP, &r_rsp);
+        VERIFY_UC_OPERATION_VOID(err, "Failed to read memory at RSP");
+
+        r_rsp += 5 * sizeof(uint64_t);
+        uc_mem_read(uc, r_rsp, &stack_param, sizeof(stack_param));
+
+        protos.push_back({ r_r9, stack_param });
+    }
+
+    /* Now handle the stack-based parameters */
+    r_rsp += sizeof(uint64_t);
+    uc_mem_read(uc, r_rsp, &stack_param, sizeof(stack_param));
+
+    while (stack_param)
+    {
+        uint64_t iface_addr = 0;
+        uc_mem_read(uc, r_rsp + sizeof(uint64_t), &iface_addr, sizeof(iface_addr));
+
+        protos.push_back({ stack_param, iface_addr });
+
+        /* Advance to the next protocol GUID */
+        r_rsp += 2 * sizeof(uint64_t);
+        uc_mem_read(uc, r_rsp, &stack_param, sizeof(stack_param));
+    }
+
+out:
+    for (const auto& p : protos)
+    {
+        EFI_GUID Protocol = { 0 };
+        err = uc_mem_read(uc, p.first, &Protocol, sizeof(Protocol));
+        VERIFY_UC_OPERATION_VOID(err, "Failed to read memory");
+
+        DEBUG_MSG("Installed protocol: %s (%s)",
+            guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
+
+        if (add_protocol(&Protocol, p.second) != 0)
+        {
+            ERROR_MSG("Failed to add Protocol %s\n", guid_to_string(&Protocol));
+            continue;
+        }
+    }
 
     /* return value */  
     uint64_t r_rax = EFI_SUCCESS;
