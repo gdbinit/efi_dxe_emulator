@@ -88,6 +88,7 @@
 #include "breakpoints.h"
 #include "unicorn_macros.h"
 #include "mem_utils.h"
+#include "unicorn_hooks.h"
 
 struct bin_images_tailq g_images = TAILQ_HEAD_INITIALIZER(g_images);
 
@@ -410,6 +411,13 @@ load_and_map_other_image(uc_engine *uc, char *image_path)
     
     fix_relocations(uc, last_image);
     
+    /* we want to be able to debug code in the axillary modules as well */
+    if (add_unicorn_hook(uc, UC_HOOK_CODE, hook_code, last_image->mapped_addr, last_image->mapped_addr + last_image->buf_size) != 0)
+    {
+        ERROR_MSG("Failed to add code hook for module %s.", last_image->file_path);
+        return EXIT_FAILURE;
+    }
+
     return 0;
 }
 
