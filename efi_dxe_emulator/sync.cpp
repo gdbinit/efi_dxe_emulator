@@ -1,9 +1,11 @@
 #include "sync.h"
 #include "config.h"
 #include "logging.h"
+#include "tunnel.h"
+#include "loader.h"
 
 #include <unicorn/unicorn.h>
-#include "tunnel.h"
+#include <sys/queue.h>
 
 ULONG64 g_Offset = NULL;
 ULONG64 g_Base = EXEC_ADDRESS;
@@ -11,6 +13,8 @@ ULONG64 g_Base = EXEC_ADDRESS;
 // Default host value is locahost
 static CHAR* g_DefaultHost = "127.0.0.1";
 static CHAR* g_DefaultPort = "9100";
+
+extern struct bin_images_tailq g_images;
 
 // Update state and send info to client: eip module's base address, offset, name
 int
@@ -22,7 +26,26 @@ UpdateState(uc_engine *uc)
         return -1;
     }
 
+    struct bin_image* current_image = NULL;
+    TAILQ_FOREACH(current_image, &g_images, entries)
+    {
+        if ( (current_image->mapped_addr <= g_Offset) &&
+             (g_Offset <= current_image->mapped_addr + current_image->buf_size) )
+        {
+            g_Base = current_image->mapped_addr;
+            HRESULT hRes = TunnelSend("[notice]{\"type\":\"module\",\"path\":\"%s\"}\n", current_image->file_path);
+            if (FAILED(hRes)) {
+                goto Exit;
+            }
+        }
+    }
+
     HRESULT hRes = TunnelSend("[sync]{\"type\":\"loc\",\"base\":%llu,\"offset\":%llu}\n", g_Base, g_Offset);
+    if (FAILED(hRes)) {
+        goto Exit;
+    }
+
+Exit:
     return (SUCCEEDED(hRes)) ? 0 : -1;
 }
 
