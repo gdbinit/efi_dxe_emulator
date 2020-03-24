@@ -26,6 +26,8 @@ UpdateState(uc_engine *uc)
         return -1;
     }
 
+    HRESULT hRes;
+
     struct bin_image* current_image = NULL;
     TAILQ_FOREACH(current_image, &g_images, entries)
     {
@@ -33,14 +35,14 @@ UpdateState(uc_engine *uc)
              (g_Offset <= current_image->mapped_addr + current_image->buf_size) )
         {
             g_Base = current_image->mapped_addr;
-            HRESULT hRes = TunnelSend("[notice]{\"type\":\"module\",\"path\":\"%s\"}\n", current_image->file_path);
+            hRes = TunnelSend("[notice]{\"type\":\"module\",\"path\":\"%s\"}\n", current_image->file_path);
             if (FAILED(hRes)) {
                 goto Exit;
             }
         }
     }
 
-    HRESULT hRes = TunnelSend("[sync]{\"type\":\"loc\",\"base\":%llu,\"offset\":%llu}\n", g_Base, g_Offset);
+    hRes = TunnelSend("[sync]{\"type\":\"loc\",\"base\":%llu,\"offset\":%llu}\n", g_Base, g_Offset);
     if (FAILED(hRes)) {
         goto Exit;
     }
