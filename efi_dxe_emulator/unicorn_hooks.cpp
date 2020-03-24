@@ -90,12 +90,6 @@
 #include "unicorn_macros.h"
 #include "mem_utils.h"
 
-/* Apple's public key used to sign the SCBO files
- * since we are not emulating the filesystem we are going to inject it directly into emulation memory
- * at a certain breakpoint
- */
-unsigned char apple_public_key[] = "\x13\x78\x07\x72\x47\x12\x81\x22\x39\x4B\x43\x1C\x65\x48\x19\xF1\xBA\xF5\x3F\xD6\x30\xDA\x25\x69\x3F\x7D\x4C\x24\xA5\xAE\x70\x57\x1D\x60\x45\x7D\x01\x4B\x75\x61\x0C\xF1\x9C\x6D\xC5\xD7\x12\x66\xB9\x9F\xC3\x27\x7B\xDD\x91\xE7\x38\x71\xBF\x36\x63\xE5\x2B\x26\x4C\xB0\x5C\xFC\x3C\x7B\xCC\x84\x70\xFB\x60\xE1\xB3\xAB\x3A\x37\x4F\x27\xCE\x5F\x38\x07\xD9\x85\xD6\xC0\x2E\x28\xF6\x27\x60\x8D\xD2\x64\x01\x05\xD8\x62\x3A\xD6\xEA\xD9\x40\x71\x87\xDD\x9C\xCB\x5B\xCC\x5C\x51\x0C\xE1\x72\xB6\xF7\x77\xF9\x20\xE2\xFB\x6B\xDA\xF1\x79\x51\x18\x9E\x50\x3F\xBB\x0E\xB3\x5A\x00\xF6\xED\x1C\xDE\xA8\x0E\x49\x37\x81\x67\x45\xE9\x72\xF4\x37\xC9\x3F\xFB\x28\xF0\x89\x56\x39\x1F\x28\xC4\x11\xB5\x55\x06\x3B\xFD\xC8\x45\x96\xAE\x68\x20\x7F\x3E\x84\x11\xFC\x8E\xE6\x68\x14\xC0\x07\x8A\x74\x1B\xB9\x5A\x24\x6A\x9A\x09\x2A\x53\x38\x40\x8E\xCE\x1F\xB4\x62\x09\x5D\x47\x0C\x92\x1D\x88\x78\xBC\xDA\x0D\xAE\x82\x19\x61\xBF\x1F\xD3\xDF\xA1\xCA\x2E\xAA\xE8\x22\xFB\x51\x13\xE7\x88\x53\x71\xE4\xDF\x10\x8C\xA5\x7F\x3E\x90\x28\xEA\x34\x3E\x44\x6D\xAA\x05\xA9";
-
 struct unicorn_hooks
 {
     TAILQ_ENTRY(unicorn_hooks) entries;
@@ -192,32 +186,6 @@ void
 hook_code(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
 {
 //    DEBUG_MSG("Hit code at 0x%llx", address);
-    
-    /* XXX: a hack to inject directly the Apple public key into the right location
-     * avoiding to emulate the whole protocol that locates the keys in the EFI filesystem
-     */
-    if (address == 0x10002272)
-    {
-        DEBUG_MSG("Hit Apple public key injection breakpoint!");
-        // retrieve the address of the buffer
-        uint64_t r_rdx = 0;
-        uc_err err = UC_ERR_OK;
-        err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
-        VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX");
-        DEBUG_MSG("Public key buffer is at address 0x%llx", r_rdx);
-        // write the public key to the buffer
-        err = uc_mem_write(uc, r_rdx, apple_public_key, sizeof(apple_public_key));
-        VERIFY_UC_OPERATION_VOID(err, "Failed to write Apple public key to Unicorn memory");
-        // set a success return value for protocol call
-        uint64_t r_rax = 0;
-        err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
-        VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX register");
-        // skip the call to next instruction
-        uint64_t r_rip = 0x10002277;
-        err = uc_reg_write(uc, UC_X86_REG_RIP, &r_rip);
-        VERIFY_UC_OPERATION_VOID(err, "Failed to write RIP register");
-        return;
-    }
     
     int type = 0;
     if (find_breakpoint(address, &type) == 0)
