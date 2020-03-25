@@ -71,3 +71,4 @@ void print_x86_debug_registers(uc_engine *uc);
 
 int register_debugger_cmds(uc_engine *uc);
 int context_cmd(const char *exp, uc_engine *uc);
+int disassemble_cmd(const char* exp, uc_engine* uc);

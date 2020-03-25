@@ -75,6 +75,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
+#include <string>
 
 #include "pe_definitions.h"
 #include "efi_definitions.h"
@@ -111,6 +112,7 @@ register_debugger_cmds(uc_engine *uc)
     add_user_cmd("s", NULL, set_mem_cmd, "Set memory.\n\ns/SIZE ADDRESS BYTES\nSIZE must be 1,2,4,8 bytes", uc);
     add_user_cmd("sr", NULL, set_register_cmd, "Set register.\n\nsr REGISTER VALUE\nREGISTER is a valid general register\nVALUE the new register value", uc);
     add_user_cmd("guid", NULL, print_guid_cmd, "Print GUID.\n\nguid ADDRESS", uc);
+    add_user_cmd("disassemble", NULL, disassemble_cmd, "Displays disassembled code.\n\ndisassemble [ADDRESS]", uc);
     return 0;
 }
 
@@ -570,6 +572,30 @@ context_cmd(const char *exp, uc_engine *uc)
         ERROR_MSG("Can't read RIP.");
         return 0;
     }
+    print_dissassembly(uc, r_rip);
+    return 0;
+}
+
+int
+disassemble_cmd(const char* exp, uc_engine* uc)
+{
+    uint64_t r_rip;
+
+    std::string disassemble_exp(exp);
+    size_t pos = disassemble_exp.find("0x");
+    if (pos == std::string::npos)
+    {
+        if (uc_reg_read(uc, UC_X86_REG_RIP, &r_rip) != UC_ERR_OK)
+        {
+            ERROR_MSG("Can't read RIP.");
+            return 0;
+        }
+    }
+    else
+    {
+        r_rip = std::strtoull(disassemble_exp.c_str() + pos, nullptr, 0);
+    }
+
     print_dissassembly(uc, r_rip);
     return 0;
 }
