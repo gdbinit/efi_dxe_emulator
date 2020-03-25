@@ -876,6 +876,14 @@ hook_HandleProtocol(uc_engine *uc, uint64_t address, uint32_t size, void *user_d
     ret = EFI_SUCCESS;
 
 out:
+    /* interface pointer */
+    uint64_t r_r8 = 0;
+    err = uc_reg_read(uc, UC_X86_REG_R8, &r_r8);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R8 value");
+
+    err = uc_mem_write(uc, r_r8, &t_interface, sizeof(t_interface));
+    VERIFY_UC_OPERATION_VOID(err, "Failed to write interface pointer");
+
     /* return value */
     err = uc_reg_write(uc, UC_X86_REG_RAX, &ret);
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
