@@ -187,6 +187,15 @@ hook_code(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
 {
 //    DEBUG_MSG("Hit code at 0x%llx", address);
     
+    if (g_break)
+    {
+        /* display current CPU context like gdbinit */
+        context_cmd(NULL, uc);
+        /* and let the user take control */
+        prompt_loop();
+        g_break = false;
+    }
+
     int type = 0;
     if (find_breakpoint(address, &type) == 0)
     {

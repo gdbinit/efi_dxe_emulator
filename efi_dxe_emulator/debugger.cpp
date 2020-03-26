@@ -101,6 +101,9 @@ int set_mem_cmd(const char *exp, uc_engine *uc);
 int print_guid_cmd(const char *exp, uc_engine *uc);
 int set_register_cmd(const char *exp, uc_engine *uc);
 
+bool g_break = false;
+BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType);
+
 #pragma region Functions to register the commands
 
 int
@@ -113,7 +116,10 @@ register_debugger_cmds(uc_engine *uc)
     add_user_cmd("sr", NULL, set_register_cmd, "Set register.\n\nsr REGISTER VALUE\nREGISTER is a valid general register\nVALUE the new register value", uc);
     add_user_cmd("guid", NULL, print_guid_cmd, "Print GUID.\n\nguid ADDRESS", uc);
     add_user_cmd("disassemble", NULL, disassemble_cmd, "Displays disassembled code.\n\ndisassemble [ADDRESS]", uc);
-    return 0;
+
+    // Not a debugger command per se, but nevertheless we register it here.
+    BOOL err = SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+    return (err != FALSE) ? (0) : (-1);
 }
 
 #pragma endregion
@@ -598,6 +604,26 @@ disassemble_cmd(const char* exp, uc_engine* uc)
 
     print_dissassembly(uc, r_rip);
     return 0;
+}
+
+BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType)
+{
+    BOOL rc;
+
+    switch (dwCtrlType)
+    {
+    case CTRL_C_EVENT:
+        DEBUG_MSG("Got CTRL-C event\n");
+        // Signal the debugger to break at the next instruction
+        g_break = true;
+        rc = TRUE;
+        break;
+    default:
+        rc = FALSE;
+        break;
+    }
+
+    return rc;
 }
 
 #pragma endregion
