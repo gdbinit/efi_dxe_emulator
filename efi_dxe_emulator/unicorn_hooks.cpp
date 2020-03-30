@@ -269,6 +269,8 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
             break;
     }
     DEBUG_MSG("Unmapped mem hit 0x%llx", address);
+    /* and let the user take control */
+    prompt_loop();
     return 0;
 }
 
