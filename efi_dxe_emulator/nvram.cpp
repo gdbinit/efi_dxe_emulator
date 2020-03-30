@@ -308,6 +308,7 @@ lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsig
                     UnicodeStrToAsciiStr(var_name, var_name_ascii.get());
                     if (text == var_name_ascii.get())
                     {
+                        DEBUG_MSG("Found variable!");
                         *content_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
                         *out_buf = static_cast<unsigned char*>(my_malloc(*content_size));
                         memcpy(*out_buf, (unsigned char*)(name_ptr + name_size), *content_size);
