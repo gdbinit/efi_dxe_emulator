@@ -249,9 +249,6 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
     uc_mem_read(uc, r_rsp, &backtrace, sizeof(backtrace));
     DEBUG_MSG("Backtrace 0x%llx", backtrace);
     switch(type) {
-        default:
-            ERROR_MSG("UC_HOOK_MEM_INVALID type: %d at 0x%llx", type, address);
-            return false;
         case UC_MEM_READ_UNMAPPED:
             ERROR_MSG("Read from invalid memory at 0x%llx, data size = %u", address, size);
             return false;
@@ -266,6 +263,9 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
             return false;
         case UC_MEM_READ_PROT:
             ERROR_MSG("Read from non-readable memory at 0x%llx, data size = %u", address, size);
+            return false;
+        default:
+            ERROR_MSG("UC_HOOK_MEM_INVALID type: %d at 0x%llx", type, address);
             return false;
     }
     DEBUG_MSG("Unmapped mem hit 0x%llx", address);
