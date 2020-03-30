@@ -251,22 +251,22 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
     switch(type) {
         case UC_MEM_READ_UNMAPPED:
             ERROR_MSG("Read from invalid memory at 0x%llx, data size = %u", address, size);
-            return false;
+            break;
         case UC_MEM_WRITE_UNMAPPED:
             ERROR_MSG("Write to invalid memory at 0x%llx, data size = %u, data value = 0x%llx", address, size, value);
-            return false;
+            break;
         case UC_MEM_FETCH_PROT:
             ERROR_MSG("Fetch from non-executable memory at 0x%llx", address);
-            return false;
+            break;
         case UC_MEM_WRITE_PROT:
             ERROR_MSG("Write to non-writeable memory at 0x%llx, data size = %u, data value = 0x%llx", address, size, value);
-            return false;
+            break;
         case UC_MEM_READ_PROT:
             ERROR_MSG("Read from non-readable memory at 0x%llx, data size = %u", address, size);
-            return false;
+            break;
         default:
             ERROR_MSG("UC_HOOK_MEM_INVALID type: %d at 0x%llx", type, address);
-            return false;
+            break;
     }
     DEBUG_MSG("Unmapped mem hit 0x%llx", address);
     return 0;
