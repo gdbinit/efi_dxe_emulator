@@ -363,6 +363,7 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     OUTPUT_MSG("%s (%s)", guid_to_string(guid), get_guid_friendly_name(*guid));
     
     uint32_t content_size = 0;
+    uint8_t* var_buf = NULL;
 
     /*
      * if DataSize is zero it usually means that caller wants to know the length of the Data
@@ -389,7 +390,6 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
      */
     else
     {
-        uint8_t *var_buf = NULL;
         lookup_nvram_var(VariableName, &VendorGuid, &content_size, &var_buf);
 #if 0
         DEBUG_MSG("Variable contents retrieved:");
@@ -406,7 +406,6 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
         {
             ERROR_MSG("Error writing Data.");
             ret = EFI_UNSUPPORTED;
-            free(var_buf);
             goto out;
         }
         /* set the data Size */
@@ -415,15 +414,18 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
         {
             ERROR_MSG("Error writing DataSize.");
             ret = EFI_UNSUPPORTED;
-            free(var_buf);
             goto out;
         }
-        free(var_buf);
         ret = EFI_SUCCESS;
         goto out;
     }
     
 out:
+    if (var_buf)
+    {
+        free(var_buf);
+    }
+
     /* return value */
     err = uc_reg_write(uc, UC_X86_REG_RAX, &ret);
     VERIFY_UC_OPERATION_VOID(err, "Failed to write RAX return value");
