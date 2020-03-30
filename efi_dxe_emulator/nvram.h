@@ -92,6 +92,7 @@ TAILQ_HEAD(nvram_vars_tailhead, nvram_variables);
 #define NVRAM_APPLE_FSYS_STORE_SIGNATURE     0x73797346 // Fsys
 #define NVRAM_APPLE_GAID_STORE_SIGNATURE     0x64696147 // Gaid
 #define NVRAM_VSS_VARIABLE_START_ID          0x55AA
+#define NVRAM_NVAR_ENTRY_SIGNATURE           0x5241564e // NVAR
 
 // Variable store header flags
 #define NVRAM_VSS_VARIABLE_STORE_FORMATTED  0x5a
@@ -135,6 +136,26 @@ typedef struct VSS_APPLE_VARIABLE_HEADER_ {
     EFI_GUID  VendorGuid; // Variable vendor GUID
     UINT32    DataCrc32;  // CRC32 of the data
 } VSS_APPLE_VARIABLE_HEADER;
+
+typedef struct _NVAR_ENTRY_HEADER {
+    UINT32 Signature;      // NVAR
+    UINT16 Size;           // Size of the entry including header
+    UINT32 Next : 24;      // Offset to the next entry in a list, or empty if the latest in the list
+    UINT32 Attributes : 8; // Attributes
+} NVAR_ENTRY_HEADER;
+
+#define NVRAM_NVAR_ENTRY_RUNTIME          0x01
+#define NVRAM_NVAR_ENTRY_ASCII_NAME       0x02
+#define NVRAM_NVAR_ENTRY_GUID             0x04
+#define NVRAM_NVAR_ENTRY_DATA_ONLY        0x08
+#define NVRAM_NVAR_ENTRY_EXT_HEADER       0x10
+#define NVRAM_NVAR_ENTRY_HW_ERROR_RECORD  0x20 
+#define NVRAM_NVAR_ENTRY_AUTH_WRITE       0x40
+#define NVRAM_NVAR_ENTRY_VALID            0x80
+#define NVRAM_NVAR_ENTRY_EXT_CHECKSUM      0x01
+#define NVRAM_NVAR_ENTRY_EXT_AUTH_WRITE    0x10
+#define NVRAM_NVAR_ENTRY_EXT_TIME_BASED    0x20
+#define NVRAM_NVAR_ENTRY_EXT_UNKNOWN_MASK  0xCE
 
 // VSS variable states
 #define NVRAM_VSS_VARIABLE_IN_DELETED_TRANSITION     0xfe  // Variable is in obsolete transistion
