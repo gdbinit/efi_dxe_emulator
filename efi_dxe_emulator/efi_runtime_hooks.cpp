@@ -602,10 +602,7 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     err = uc_mem_read(uc, r_rdx, &VendorGuid, sizeof(EFI_GUID));
     VERIFY_UC_OPERATION_NORET(err, "Failed to read Vendor GUID")
     EFI_GUID *guid = &VendorGuid;
-    OUTPUT_MSG("%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-               guid->Data1, guid->Data2, guid->Data3,
-               guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
-               guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+    OUTPUT_MSG("%s (%s)", guid_to_string(guid), get_guid_friendly_name(*guid));
 
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
