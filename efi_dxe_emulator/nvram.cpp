@@ -74,6 +74,8 @@
 #include <sys/stat.h>
 #include <mman/sys/mman.h>
 #include <fcntl.h>
+#include <string>
+#include <memory>
 
 #include "logging.h"
 #include "config.h"
@@ -81,6 +83,7 @@
 #include "string_ops.h"
 #include "cmds.h"
 #include "mem_utils.h"
+#include "guids.h"
 
 uint8_t *g_nvram_buf;
 size_t g_nvram_buf_size;
@@ -289,6 +292,34 @@ lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsig
                 find_vss_var(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER), var_name, guid, content_size, out_buf);
                 buf_ptr += vss_header->Size;
                 cur_pos += vss_header->Size;
+                break;
+            }
+            case NVRAM_NVAR_ENTRY_SIGNATURE:
+            {
+                auto nvar_header = (NVAR_ENTRY_HEADER*)buf_ptr;
+                // GUID can be stored with the variable or in a separate store, so there will only be an index of it
+                uint32_t name_offset = (nvar_header->Attributes & NVRAM_NVAR_ENTRY_GUID) ? sizeof(EFI_GUID) : sizeof(UINT8);
+                auto name_ptr = (CHAR8*)(nvar_header + 1) + name_offset;
+                if (nvar_header->Attributes & NVRAM_NVAR_ENTRY_ASCII_NAME) {
+                    // Name is stored as ASCII string of CHAR8s
+                    std::string text(name_ptr);
+                    uint32_t name_size = text.length() + 1;
+                    auto var_name_ascii = std::make_unique<CHAR8[]>(0x100);
+                    UnicodeStrToAsciiStr(var_name, var_name_ascii.get());
+                    if (text == var_name_ascii.get())
+                    {
+                        *content_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
+                        *out_buf = static_cast<unsigned char*>(my_malloc(*content_size));
+                        memcpy(*out_buf, (unsigned char*)(name_ptr + name_size), *content_size);
+                    }
+                }
+                else {
+                    // Name is stored as UCS2 string of CHAR16s, not supported at the moment
+                    ;
+                }
+
+                buf_ptr += nvar_header->Size;
+                cur_pos += nvar_header->Size;
                 break;
             }
             default:
