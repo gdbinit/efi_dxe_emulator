@@ -79,6 +79,7 @@
 #include "unicorn_macros.h"
 #include "unicorn_utils.h"
 #include "mem_utils.h"
+#include "guids.h"
 
 extern struct nvram_vars_tailhead g_nvram_vars;
 
@@ -359,10 +360,7 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     DEBUG_MSG("Request GetVariable to: %s", ascii_var);
     
     EFI_GUID *guid = &VendorGuid;
-    OUTPUT_MSG("%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-               guid->Data1, guid->Data2, guid->Data3,
-               guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
-               guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+    OUTPUT_MSG("%s (%s)", guid_to_string(guid), get_guid_friendly_name(*guid));
     
     uint32_t content_size = 0;
 
