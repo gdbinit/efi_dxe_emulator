@@ -83,6 +83,9 @@
 #include <string>
 #include <codecvt>
 #include <locale>
+#include <vector>
+#include <sstream>
+#include <iostream>
 
 #include "logging.h"
 #include "mem_utils.h"
@@ -206,4 +209,19 @@ std::string to_string(const std::wstring& wstr)
 std::wstring to_wstring(const std::string& str)
 {
     return strconverter.from_bytes(str);
+}
+
+std::vector<std::string> tokenize(const char* str, char sep /* = ' ' */)
+{
+    std::vector<std::string> tokens;
+
+    std::stringstream ss(str);
+    std::string tmp;
+
+    while (std::getline(ss, tmp, sep))
+    {
+        tokens.push_back(tmp);
+    }
+
+    return tokens;
 }

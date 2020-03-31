@@ -65,6 +65,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 #include "efi_definitions.h"
 
@@ -73,3 +74,4 @@ char * strsep(char **stringp, const char *delim);
 size_t strlcpy(char* dst, const char* src, size_t siz);
 std::string to_string(const std::wstring& wstr);
 std::wstring to_wstring(const std::string& str);
+std::vector<std::string> tokenize(const char* str, char sep = ' ');
