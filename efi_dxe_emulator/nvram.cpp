@@ -453,6 +453,80 @@ retrieve_nvram_vars(void)
                 cur_pos += vss_header->Size;
                 break;
             }
+            case NVRAM_NVAR_ENTRY_SIGNATURE:
+            {
+                auto nvar_header = (NVAR_ENTRY_HEADER*)buf_ptr;
+                // GUID can be stored with the variable or in a separate store, so there will only be an index of it
+                uint32_t name_offset = (nvar_header->Attributes & NVRAM_NVAR_ENTRY_GUID) ? sizeof(EFI_GUID) : sizeof(UINT8);
+                auto name_ptr = (CHAR8*)(nvar_header + 1) + name_offset;
+                std::wstring var_name;
+                uint32_t name_size = 0;
+                if (nvar_header->Attributes & NVRAM_NVAR_ENTRY_DATA_ONLY)
+                {
+                    DEBUG_MSG("Data only variables not supported at the moment");
+                    buf_ptr += nvar_header->Size;
+                    cur_pos += nvar_header->Size;
+                    break;
+                }
+                if (nvar_header->Attributes & NVRAM_NVAR_ENTRY_ASCII_NAME) {
+                    // Name is stored as ASCII string of CHAR8s
+                    var_name = to_wstring(name_ptr);
+                    name_size = var_name.length() + 1;
+                }
+                else
+                {
+                    // Name is stored as UCS2 string of CHAR16s
+                    var_name = reinterpret_cast<wchar_t*>(name_ptr);
+                    name_size = (var_name.length() + 1) * sizeof(wchar_t);
+                }
+
+                // Get entry GUID
+                EFI_GUID guid{};
+                if (nvar_header->Attributes & NVRAM_NVAR_ENTRY_GUID)
+                {
+                    // GUID is stored in the variable itself
+                    guid = *reinterpret_cast<EFI_GUID*>(nvar_header + 1);
+                }
+                else
+                {
+                    // GUID is stored in GUID list at the end of the store
+                    auto guidIndex = *(UINT8*)(nvar_header + 1);
+                    //if (guidsInStore < guidIndex + 1)
+                    //    guidsInStore = guidIndex + 1;
+
+                    auto guid_ptr = reinterpret_cast<EFI_GUID*>(g_nvram_buf + g_nvram_buf_size) - 1 - guidIndex;
+                    guid = *guid_ptr;
+                    // The list begins at the end of the store and goes backwards
+                    //const EFI_GUID* guidPtr = (const EFI_GUID*)(data.constData() + data.size()) - 1 - guidIndex;
+                    //name = guidToUString(readUnaligned(guidPtr));
+                    //hasGuidIndex = true;
+                }
+
+                auto new_entry = static_cast<struct nvram_variables*>(my_malloc(sizeof(struct nvram_variables)));
+                memcpy(&new_entry->guid, &guid, sizeof(EFI_GUID));
+                if (var_name.length() <= sizeof(new_entry->name))
+                {
+                    memcpy(new_entry->name, var_name.c_str(), var_name.length() * 2 + sizeof(wchar_t));
+                }
+                else
+                {
+                    memcpy(new_entry->name, var_name.c_str(), sizeof(new_entry->name));
+                }
+                new_entry->name_size = name_size;
+
+                //*content_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
+                //*out_buf = static_cast<unsigned char*>(my_malloc(*content_size));
+                //memcpy(*out_buf, (unsigned char*)(name_ptr + name_size), *content_size);
+
+                new_entry->data_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
+                new_entry->data = static_cast<uint8_t*>(my_malloc(new_entry->data_size));
+                memcpy(new_entry->data, (unsigned char*)(name_ptr + name_size), new_entry->data_size);
+                TAILQ_INSERT_TAIL(&g_nvram_vars, new_entry, entries);
+
+                buf_ptr += nvar_header->Size;
+                cur_pos += nvar_header->Size;
+                break;
+            }
             default:
             {
                 buf_ptr += 1;
