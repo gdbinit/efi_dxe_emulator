@@ -84,6 +84,8 @@
 #include "cmds.h"
 #include "mem_utils.h"
 #include "guids.h"
+#include <iomanip>
+#include <sstream>
 
 uint8_t *g_nvram_buf;
 size_t g_nvram_buf_size;
@@ -91,6 +93,7 @@ size_t g_nvram_buf_size;
 struct nvram_vars_tailhead g_nvram_vars = TAILQ_HEAD_INITIALIZER(g_nvram_vars);
 
 static int dump_nvram_cmd(const char *exp, uc_engine *uc);
+static int edit_variable_cmd(const char* exp, uc_engine* uc);
 static void dump_nvram_vars(void);
 static void retrieve_nvram_vars(void);
 static int parse_nvram(uint8_t *buf, size_t buf_size);
@@ -101,6 +104,7 @@ void
 register_nvram_cmds(uc_engine *uc)
 {
     add_user_cmd("nvram", NULL, dump_nvram_cmd, "Dump NVRAM contents.\n\nnvram", uc);
+    add_user_cmd("ev", NULL, edit_variable_cmd, "Edit NVRAM variable.\n\nnvram", uc);
 }
 
 #pragma endregion
@@ -111,6 +115,35 @@ static int
 dump_nvram_cmd(const char *exp, uc_engine *uc)
 {
     dump_nvram_vars();
+    return 0;
+}
+
+static int
+edit_variable_cmd(const char* exp, uc_engine* uc)
+{
+    uint32_t SetupSize = 0;
+    unsigned char* SetupData = nullptr;
+    auto var = lookup_nvram_var(L"Setup", nullptr, &SetupSize, &SetupData);
+
+    auto tmpname = std::tmpnam(nullptr);
+    auto tmpfile = fopen(tmpname, "wb");
+    fwrite(SetupData, 1, SetupSize, tmpfile);
+    fclose(tmpfile);
+
+    // Run hex editor
+    std::stringstream ss;
+    ss << std::quoted(R"(C:\Program Files\HxD\HxD.exe)");
+    ss << " ";
+    ss << tmpname;
+    system(ss.str().c_str());
+
+    // Re-load the variable.
+    tmpfile = fopen(tmpname, "rb");
+    fread(SetupData, 1, SetupSize, tmpfile);
+    fclose(tmpfile);
+
+    var->data = SetupData;
+
     return 0;
 }
 
