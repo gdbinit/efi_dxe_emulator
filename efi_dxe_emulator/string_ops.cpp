@@ -80,6 +80,9 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <string>
+#include <codecvt>
+#include <locale>
 
 #include "logging.h"
 #include "mem_utils.h"
@@ -190,4 +193,17 @@ strlcpy(char *dst, const char *src, size_t siz)
             ;
     }
     return(s - src - 1);	/* count does not include NUL */
+}
+
+using convert_t = std::codecvt_utf8<wchar_t>;
+static std::wstring_convert<convert_t, wchar_t> strconverter;
+
+std::string to_string(const std::wstring& wstr)
+{
+    return strconverter.to_bytes(wstr);
+}
+
+std::wstring to_wstring(const std::string& str)
+{
+    return strconverter.from_bytes(str);
 }
