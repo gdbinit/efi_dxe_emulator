@@ -273,62 +273,16 @@ find_vss_var(uint8_t *store_buf, uint32_t store_size, CHAR16 *var_name, EFI_GUID
 int
 lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
 {
-    uint8_t *buf_ptr = g_nvram_buf;
-    size_t cur_pos = 0;
-    
-    while (cur_pos < g_nvram_buf_size)
+    struct nvram_variables* entry = NULL;
+    TAILQ_FOREACH(entry, &g_nvram_vars, entries)
     {
-        VSS_VARIABLE_STORE_HEADER *vss_header = (VSS_VARIABLE_STORE_HEADER*)buf_ptr;
-        switch (vss_header->Signature) {
-            case NVRAM_VSS_STORE_SIGNATURE:
-            {
-                find_vss_var(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER), var_name, guid, content_size, out_buf);
-                buf_ptr += vss_header->Size;
-                cur_pos += vss_header->Size;
-                break;
-            }
-            case NVRAM_APPLE_SVS_STORE_SIGNATURE:
-            {
-                find_vss_var(buf_ptr + sizeof(VSS_VARIABLE_STORE_HEADER), vss_header->Size - sizeof(VSS_VARIABLE_STORE_HEADER), var_name, guid, content_size, out_buf);
-                buf_ptr += vss_header->Size;
-                cur_pos += vss_header->Size;
-                break;
-            }
-            case NVRAM_NVAR_ENTRY_SIGNATURE:
-            {
-                auto nvar_header = (NVAR_ENTRY_HEADER*)buf_ptr;
-                // GUID can be stored with the variable or in a separate store, so there will only be an index of it
-                uint32_t name_offset = (nvar_header->Attributes & NVRAM_NVAR_ENTRY_GUID) ? sizeof(EFI_GUID) : sizeof(UINT8);
-                auto name_ptr = (CHAR8*)(nvar_header + 1) + name_offset;
-                if (nvar_header->Attributes & NVRAM_NVAR_ENTRY_ASCII_NAME) {
-                    // Name is stored as ASCII string of CHAR8s
-                    std::string text(name_ptr);
-                    uint32_t name_size = text.length() + 1;
-                    auto var_name_ascii = std::make_unique<CHAR8[]>(0x100);
-                    UnicodeStrToAsciiStr(var_name, var_name_ascii.get());
-                    if (text == var_name_ascii.get())
-                    {
-                        DEBUG_MSG("Found variable!");
-                        *content_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
-                        *out_buf = static_cast<unsigned char*>(my_malloc(*content_size));
-                        memcpy(*out_buf, (unsigned char*)(name_ptr + name_size), *content_size);
-                    }
-                }
-                else {
-                    // Name is stored as UCS2 string of CHAR16s, not supported at the moment
-                    ;
-                }
-
-                buf_ptr += nvar_header->Size;
-                cur_pos += nvar_header->Size;
-                break;
-            }
-            default:
-            {
-                buf_ptr += 1;
-                cur_pos += 1;
-                break;
-            }
+        if (wcsncmp((wchar_t*)entry->name, (wchar_t*)var_name, entry->name_size) == 0)
+        {
+            DEBUG_MSG("Found variable!");
+            *out_buf = static_cast<unsigned char*>(my_malloc(entry->data_size));
+            memcpy(*out_buf, entry->data, entry->data_size);
+            *content_size = entry->data_size;
+            break;
         }
     }
     return 0;
