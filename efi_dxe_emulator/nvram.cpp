@@ -323,7 +323,7 @@ lookup_nvram_var(const CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size,
     struct nvram_variables* entry = NULL;
     TAILQ_FOREACH(entry, &g_nvram_vars, entries)
     {
-        if (wcsncmp((wchar_t*)entry->name, (wchar_t*)var_name, entry->name_size) == 0)
+        if (wcsncmp(entry->name, var_name, entry->name_size) == 0)
         {
             DEBUG_MSG("Found variable!");
             *out_buf = static_cast<unsigned char*>(my_malloc(entry->data_size));
