@@ -121,13 +121,27 @@ dump_nvram_cmd(const char *exp, uc_engine *uc)
 static int
 edit_variable_cmd(const char* exp, uc_engine* uc)
 {
-    uint32_t SetupSize = 0;
-    unsigned char* SetupData = nullptr;
-    auto var = lookup_nvram_var(L"Setup", nullptr, &SetupSize, &SetupData);
+    auto cmd_tokens = tokenize(exp);
+    _ASSERT(cmd_tokens.at(0) == "ev");
+    
+    std::wstring var_name;
+    try
+    {
+        var_name = to_wstring(cmd_tokens.at(1));
+    }
+    catch (const std::out_of_range&)
+    {
+        WARNING_MSG("No variable was specified");
+        return -1;
+    }
+
+    uint32_t var_size = 0;
+    unsigned char* var_data = nullptr;
+    auto var = lookup_nvram_var(var_name.c_str(), nullptr, &var_size, &var_data);
 
     auto tmpname = std::tmpnam(nullptr);
     auto tmpfile = fopen(tmpname, "wb");
-    fwrite(SetupData, 1, SetupSize, tmpfile);
+    fwrite(var_data, 1, var_size, tmpfile);
     fclose(tmpfile);
 
     // Run hex editor
@@ -139,10 +153,10 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
 
     // Re-load the variable.
     tmpfile = fopen(tmpname, "rb");
-    fread(SetupData, 1, SetupSize, tmpfile);
+    fread(var_data, 1, var_size, tmpfile);
     fclose(tmpfile);
 
-    var->data = SetupData;
+    var->data = var_data;
 
     return 0;
 }
