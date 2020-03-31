@@ -132,12 +132,17 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
     catch (const std::out_of_range&)
     {
         WARNING_MSG("No variable was specified");
-        return -1;
+        return 0;
     }
 
     uint32_t var_size = 0;
     unsigned char* var_data = nullptr;
     auto var = lookup_nvram_var(var_name.c_str(), nullptr, &var_size, &var_data);
+    if (!var)
+    {
+        ERROR_MSG("Variable %S not found", var_name.c_str());
+        return 0;
+    }
 
     auto tmpname = std::tmpnam(nullptr);
     auto tmpfile = fopen(tmpname, "wb");
