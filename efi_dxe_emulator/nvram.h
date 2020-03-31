@@ -71,7 +71,7 @@
 
 void register_nvram_cmds(uc_engine *uc);
 int load_nvram(char *nvram_file);
-struct nvram_variables* lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf);
+struct nvram_variables* lookup_nvram_var(const CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf);
 
 struct nvram_variables
 {
