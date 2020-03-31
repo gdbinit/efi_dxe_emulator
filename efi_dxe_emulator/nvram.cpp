@@ -300,10 +300,7 @@ dump_nvram_vars(void)
         UnicodeStrToAsciiStr(entry->name, c_string);
         OUTPUT_MSG("\n-[ Variable: %s ]-", c_string);
         EFI_GUID *guid = &entry->guid;
-        OUTPUT_MSG("-[ GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X ]-",
-                   guid->Data1, guid->Data2, guid->Data3,
-                   guid->Data4[0], guid->Data4[1], guid->Data4[2], guid->Data4[3],
-                   guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+        OUTPUT_MSG("-[ GUID: %s ]-", guid_to_string(guid));
         free(c_string);
         /* output data in hex and characters if possible */
         int i = 0;
