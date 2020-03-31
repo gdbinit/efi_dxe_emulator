@@ -270,7 +270,7 @@ find_vss_var(uint8_t *store_buf, uint32_t store_size, CHAR16 *var_name, EFI_GUID
     return 0;
 }
 
-int
+struct nvram_variables *
 lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
 {
     struct nvram_variables* entry = NULL;
@@ -285,7 +285,7 @@ lookup_nvram_var(CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsig
             break;
         }
     }
-    return 0;
+    return entry;
 }
 
 static void
