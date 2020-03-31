@@ -103,5 +103,8 @@ struct configuration
     char *guids_file;
     char *history_file;
     char *serial_number;
+    char *hex_editor;
     struct config_protocols_tailq protos;
 };
+
+extern struct configuration g_config;

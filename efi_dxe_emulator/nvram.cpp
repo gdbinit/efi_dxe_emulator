@@ -132,7 +132,7 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
 
     // Run hex editor
     std::stringstream ss;
-    ss << std::quoted(R"(C:\Program Files\HxD\HxD.exe)");
+    ss << std::quoted(g_config.hex_editor);
     ss << " ";
     ss << tmpname;
     system(ss.str().c_str());

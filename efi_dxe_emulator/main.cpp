@@ -141,6 +141,10 @@ my_ini_handler(void* user, const char* section, const char* name, const char* va
         {
             g_config.serial_number = strdup(value);
         }
+        else if (strcmp(name, "hexedit") == 0)
+        {
+            g_config.hex_editor = strdup(value);
+        }
     }
     else if (strcmp(section, "protocols") == 0)
     {
@@ -177,6 +181,7 @@ main(int argc, const char * argv[])
         { "ini", required_argument, NULL, 'i' },
         { "nvram", required_argument, NULL, 'n' },
         { "guids", required_argument, NULL, 'g' },
+        { "hexedit", required_argument, NULL, 'x' },
         { NULL, 0, NULL, 0 }
     };
     int option_index = 0;
@@ -187,9 +192,10 @@ main(int argc, const char * argv[])
     char* guids_file = NULL;
     int verbose_mode = 0;
     char *ini_file = NULL;
+    char* hex_editor = NULL;
     
     // process command line options
-    while ((c = getopt_long (argc, (char * const*)argv, "vt:n:g:i:", long_options, &option_index)) != -1)
+    while ((c = getopt_long (argc, (char * const*)argv, "vt:n:g:i:x:", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -207,6 +213,9 @@ main(int argc, const char * argv[])
                 break;
             case 'i':
                 ini_file = optarg;
+                break;
+            case 'x':
+                hex_editor = optarg;
                 break;
             default:
                 break;
@@ -231,6 +240,7 @@ main(int argc, const char * argv[])
         g_config.target_file = target_file;
         g_config.nvram_file = nvram_file;
         g_config.guids_file = guids_file;
+        g_config.hex_editor = hex_editor;
     }
     else
     {
@@ -268,6 +278,18 @@ main(int argc, const char * argv[])
     if (g_config.guids_file == NULL)
     {
         g_config.guids_file = GUIDS_FILE;
+    }
+
+    if (g_config.hex_editor == NULL)
+    {
+        WARNING_MSG("Path to hex editor not specified, some commands will not work");
+    }
+    else
+    {
+        if (access(g_config.hex_editor, R_OK) < 0)
+        {
+            WARNING_MSG("Hex editor %s does not exit or not accessible. Error: %s.", g_config.hex_editor, strerror(errno));
+        }
     }
 
     /* and now start the party */
