@@ -489,15 +489,10 @@ retrieve_nvram_vars(void)
                 {
                     // GUID is stored in GUID list at the end of the store
                     auto guidIndex = *(UINT8*)(nvar_header + 1);
-                    //if (guidsInStore < guidIndex + 1)
-                    //    guidsInStore = guidIndex + 1;
 
+                    // The list begins at the end of the store and goes backwards
                     auto guid_ptr = reinterpret_cast<EFI_GUID*>(g_nvram_buf + g_nvram_buf_size) - 1 - guidIndex;
                     guid = *guid_ptr;
-                    // The list begins at the end of the store and goes backwards
-                    //const EFI_GUID* guidPtr = (const EFI_GUID*)(data.constData() + data.size()) - 1 - guidIndex;
-                    //name = guidToUString(readUnaligned(guidPtr));
-                    //hasGuidIndex = true;
                 }
 
                 auto new_entry = static_cast<struct nvram_variables*>(my_malloc(sizeof(struct nvram_variables)));
@@ -511,11 +506,6 @@ retrieve_nvram_vars(void)
                     memcpy(new_entry->name, var_name.c_str(), sizeof(new_entry->name));
                 }
                 new_entry->name_size = name_size;
-
-                //*content_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
-                //*out_buf = static_cast<unsigned char*>(my_malloc(*content_size));
-                //memcpy(*out_buf, (unsigned char*)(name_ptr + name_size), *content_size);
-
                 new_entry->data_size = nvar_header->Size - (name_offset + name_size + sizeof(NVAR_ENTRY_HEADER));
                 new_entry->data = static_cast<uint8_t*>(my_malloc(new_entry->data_size));
                 memcpy(new_entry->data, (unsigned char*)(name_ptr + name_size), new_entry->data_size);
