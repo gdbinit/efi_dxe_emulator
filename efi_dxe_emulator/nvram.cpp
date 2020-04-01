@@ -94,7 +94,7 @@ struct nvram_vars_tailhead g_nvram_vars = TAILQ_HEAD_INITIALIZER(g_nvram_vars);
 
 static int dump_nvram_cmd(const char *exp, uc_engine *uc);
 static int edit_variable_cmd(const char* exp, uc_engine* uc);
-static void dump_nvram_vars(void);
+static void dump_nvram_vars(const std::string& var_name);
 static void retrieve_nvram_vars(void);
 static int parse_nvram(uint8_t *buf, size_t buf_size);
 
@@ -114,7 +114,20 @@ register_nvram_cmds(uc_engine *uc)
 static int
 dump_nvram_cmd(const char *exp, uc_engine *uc)
 {
-    dump_nvram_vars();
+    auto cmd_tokens = tokenize(exp);
+    _ASSERT(cmd_tokens.at(0) == "nvram");
+
+    std::string var_name;
+    try
+    {
+        var_name = cmd_tokens.at(1);
+    }
+    catch (const std::out_of_range&)
+    {
+        ; // Nothing
+    }
+
+    dump_nvram_vars(var_name);
     return 0;
 }
 
@@ -357,7 +370,7 @@ lookup_nvram_var(const CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size,
 }
 
 static void
-dump_nvram_vars(void)
+dump_nvram_vars(const std::string& var_name)
 {
     OUTPUT_MSG("\n-[ NVRAM variables dump ]---------------------");
     struct nvram_variables *entry = NULL;
@@ -366,10 +379,11 @@ dump_nvram_vars(void)
         uint32_t length = StrLen(entry->name);
         auto c_string = static_cast<char *>(my_malloc(length+2));
         UnicodeStrToAsciiStr(entry->name, c_string);
+        bool include = var_name.empty() || (var_name == c_string);
+        if (!include) goto next;
         OUTPUT_MSG("\n-[ Variable: %s ]-", c_string);
         EFI_GUID *guid = &entry->guid;
         OUTPUT_MSG("-[ GUID: %s ]-", guid_to_string(guid));
-        free(c_string);
         /* output data in hex and characters if possible */
         int i = 0;
         int x = 0;
@@ -399,8 +413,9 @@ dump_nvram_vars(void)
             }
             i += 16;
             fprintf(stdout, "|\n");
-
         }
+    next:
+        free(c_string);
     }
     OUTPUT_MSG("\n-[ End NVRAM variables dump ]---------------------");
     return;
