@@ -606,6 +606,41 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     EFI_GUID *guid = &VendorGuid;
     OUTPUT_MSG("%s (%s)", guid_to_string(guid), get_guid_friendly_name(*guid));
 
+    /* read attributes */
+    err = uc_reg_read(uc, UC_X86_REG_R8, &r_r8);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R8 register");
+
+    /* read data length */
+    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
+
+    /* read data */
+    uint64_t r_rsp = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RSP, &r_rsp);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RSP register");
+
+    r_rsp += 5 * sizeof(uint64_t);
+    uc_mem_read(uc, r_rsp, &r_data, sizeof(r_data));
+
+    std::vector<std::byte> var_data(r_r9);
+    uc_mem_read(uc, r_data, var_data.data(), r_r9);
+
+    auto new_entry = static_cast<struct nvram_variables*>(my_malloc(sizeof(struct nvram_variables)));
+    memcpy(&new_entry->guid, guid, sizeof(EFI_GUID));
+    if (length * 2 + 2 <= sizeof(new_entry->name))
+    {
+        memcpy(new_entry->name, var_name_ptr, length * 2 + 2);
+    }
+    else
+    {
+        memcpy(new_entry->name, var_name_ptr, sizeof(new_entry->name));
+    }
+    new_entry->name_size = length * 2 + 2;
+    new_entry->data_size = r_r9;
+    new_entry->data = static_cast<uint8_t*>(my_malloc(new_entry->data_size));
+    memcpy(new_entry->data, var_data.data(), new_entry->data_size);
+    TAILQ_INSERT_TAIL(&g_nvram_vars, new_entry, entries);
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
