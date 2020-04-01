@@ -154,7 +154,23 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
     ss << std::quoted(g_config.hex_editor);
     ss << " ";
     ss << tmpname;
-    system(ss.str().c_str());
+
+    STARTUPINFO si{};
+    PROCESS_INFORMATION pi{};
+    BOOL rc = CreateProcessA(
+        nullptr,
+        ss.str().data(),
+        nullptr,
+        nullptr,
+        FALSE,
+        0,
+        nullptr,
+        nullptr,
+        &si,
+        &pi);
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 
     // Re-load the variable.
     tmpfile = fopen(tmpname, "rb");
