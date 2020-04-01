@@ -481,6 +481,8 @@ main(int argc, const char * argv[])
     err = uc_emu_start(uc, main_image->tramp_start, main_image->tramp_end, 0, 0);
     VERIFY_UC_OPERATION_RET(err, EXIT_FAILURE, "Failed to start Unicorn emulation");
     OUTPUT_MSG("[+] All done, main image emulation complete.");
+    context_cmd("", uc);
+    prompt_loop();
     uc_close(uc);
     close_linenoise(g_config.history_file);
     return 0;
