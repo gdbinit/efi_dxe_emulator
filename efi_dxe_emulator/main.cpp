@@ -233,16 +233,7 @@ main(int argc, const char * argv[])
     /* initialize the tailq that might hold protocols to load */
     TAILQ_INIT(&g_config.protos);
 
-    /* if there is no INI given try parameters */
-    if (ini_file == NULL)
-    {
-        /* set config values */
-        g_config.target_file = target_file;
-        g_config.nvram_file = nvram_file;
-        g_config.guids_file = guids_file;
-        g_config.hex_editor = hex_editor;
-    }
-    else
+    if (ini_file)
     {
         if (access(ini_file, R_OK) < 0)
         {
@@ -255,6 +246,12 @@ main(int argc, const char * argv[])
             return EXIT_FAILURE;
         }
     }
+
+    /* explicit parameters should override the INI file */
+    if (target_file) g_config.target_file = target_file;
+    if (nvram_file) g_config.nvram_file = nvram_file;
+    if (guids_file) g_config.guids_file = guids_file;
+    if (hex_editor) g_config.hex_editor = hex_editor;
 
     if (g_config.target_file == NULL)
     {
