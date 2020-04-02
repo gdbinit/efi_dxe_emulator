@@ -72,6 +72,7 @@
 #include <sys/queue.h>
 #include <assert.h>
 #include <unicorn/unicorn.h>
+#include <stdexcept>
 
 #include "pe_definitions.h"
 #include "efi_definitions.h"
@@ -141,33 +142,24 @@ info_cmd_help(void)
 static int
 info_cmd(const char *exp, uc_engine *uc)
 {
-    char *local_exp = NULL;
-    char *local_exp_ptr = NULL;
-    local_exp_ptr = local_exp = strdup(exp);
-    if (local_exp == NULL)
-    {
-        ERROR_MSG("strdup failed");
-        return 0;
-    }
+    auto tokens = tokenize(exp);
+    assert(tokens.at(0) == "info");
 
-    char *token = NULL;
-    /* get rid of info string */
-    strsep(&local_exp, " ");
-    /* extract subcommand */
-    token = strsep(&local_exp, " ");
-    free(local_exp_ptr);
-    
-    /* we need a target address */
-    if (token == NULL)
+    std::string token;
+    try
+    {
+        token = tokens.at(1);
+    }
+    catch (const std::out_of_range&)
     {
         info_cmd_help();
         return 0;
     }
-    
+
     struct bin_image *main_image = TAILQ_FIRST(&g_images);
     assert(main_image != NULL);
     
-    if (strncmp(token, "target", 7) == 0)
+    if (token == "target")
     {
         OUTPUT_MSG("EFI Executable:\n%s", main_image->file_path);
         OUTPUT_MSG("Base address: 0%llx", main_image->base_addr);
@@ -175,7 +167,7 @@ info_cmd(const char *exp, uc_engine *uc)
         OUTPUT_MSG("Image size: 0x%llx", main_image->buf_size);
         OUTPUT_MSG("Number of sections: %d", main_image->nr_sections);
     }
-    else if (strncmp(token, "all", 3) == 0)
+    else if (token == "all")
     {
         int count = 1;
         struct bin_image *tmp_image = NULL;
