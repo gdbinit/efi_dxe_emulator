@@ -117,6 +117,9 @@ static int
 quit_cmd(const char *exp, uc_engine *uc)
 {
     uc_emu_stop(uc);
+    exit(0);
+
+    /* unreachable */
     return 1;
 }
 
