@@ -80,15 +80,6 @@
 #include "mem_utils.h"
 #include "guids.h"
 
-struct protocols_list
-{
-    EFI_GUID guid;
-    uint64_t iface;
-    TAILQ_ENTRY(protocols_list) entries;
-};
-
-TAILQ_HEAD(protocols_list_tailq, protocols_list);
-
 struct protocols_list_tailq g_installed_protocols = TAILQ_HEAD_INITIALIZER(g_installed_protocols);
 
 int

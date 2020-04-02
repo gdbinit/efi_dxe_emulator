@@ -85,8 +85,11 @@
 #include "cmds.h"
 #include "loader.h"
 #include "string_ops.h"
+#include "protocols.h"
+#include "guids.h"
 
 extern struct bin_images_tailq g_images;
+extern struct protocols_list_tailq g_installed_protocols;
 
 static int quit_cmd(const char *exp, uc_engine *uc);
 static int run_cmd(const char *exp, uc_engine *uc);
@@ -181,6 +184,18 @@ info_cmd(const char *exp, uc_engine *uc)
             OUTPUT_MSG("Entrypoint: 0x%llx (0x%llx)", tmp_image->base_addr + tmp_image->entrypoint, tmp_image->entrypoint);
             OUTPUT_MSG("Image size: 0x%llx", tmp_image->buf_size);
             OUTPUT_MSG("Number of sections: %d", tmp_image->nr_sections);
+        }
+    }
+    else if (token == "protocols")
+    {
+        int count = 1;
+        struct protocols_list *tmp_proto = NULL;
+        TAILQ_FOREACH(tmp_proto, &g_installed_protocols, entries)
+        {
+            OUTPUT_MSG("--- [Protocol #%02d ] ---", count++);
+            OUTPUT_MSG("GUID: %s", guid_to_string(&tmp_proto->guid));
+            OUTPUT_MSG("Friendly name: %s", get_guid_friendly_name(tmp_proto->guid));
+            OUTPUT_MSG("Interface: 0x%llx", tmp_proto->iface);
         }
     }
     /* everything else is invalid */

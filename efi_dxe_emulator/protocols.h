@@ -64,7 +64,17 @@
 #pragma once
 
 #include <stdio.h>
+#include <sys/queue.h>
 #include "efi_definitions.h"
+
+struct protocols_list
+{
+    EFI_GUID guid;
+    uint64_t iface;
+    TAILQ_ENTRY(protocols_list) entries;
+};
+
+TAILQ_HEAD(protocols_list_tailq, protocols_list);
 
 int add_protocol(EFI_GUID *guid, uint64_t iface);
 int locate_protocol(EFI_GUID *guid, uint64_t *iface);
