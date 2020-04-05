@@ -184,8 +184,11 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
     auto var = lookup_nvram_var(var_name.c_str(), nullptr, &var_size, &var_data);
     if (!var)
     {
-        ERROR_MSG("Variable %S not found", var_name.c_str());
-        return 0;
+        WARNING_MSG("Variable %S not found", var_name.c_str());
+        var = static_cast<struct nvram_variables*>(my_calloc(sizeof(struct nvram_variables), 1));
+        wcscpy(var->name, var_name.c_str());
+        var->name_size = var_name.length() * 2 + 2;
+        TAILQ_INSERT_TAIL(&g_nvram_vars, var, entries);
     }
 
     auto tmpname = std::tmpnam(nullptr);
@@ -197,9 +200,18 @@ edit_variable_cmd(const char* exp, uc_engine* uc)
 
     // Re-load the variable.
     tmpfile = fopen(tmpname, "rb");
+    fseek(tmpfile, 0, SEEK_END);
+    var_size = ftell(tmpfile);
+    fseek(tmpfile, 0, SEEK_SET);
+    var_data = static_cast<unsigned char *>(my_malloc(var_size));
     fread(var_data, 1, var_size, tmpfile);
     fclose(tmpfile);
-
+    
+    var->data_size = var_size;
+    if (var->data)
+    {
+        free(var->data);
+    }
     var->data = var_data;
 
     return 0;
