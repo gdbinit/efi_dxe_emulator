@@ -133,6 +133,7 @@
     <ClCompile Include="efi_dxe_emulator\debugger.cpp" />
     <ClCompile Include="efi_dxe_emulator\efi_boot_hooks.cpp" />
     <ClCompile Include="efi_dxe_emulator\efi_runtime_hooks.cpp" />
+    <ClCompile Include="efi_dxe_emulator\events.cpp" />
     <ClCompile Include="efi_dxe_emulator\global_cmds.cpp" />
     <ClCompile Include="efi_dxe_emulator\guids.cpp" />
     <ClCompile Include="efi_dxe_emulator\loader.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="efi_dxe_emulator\efi_boot_hooks.h" />
     <ClInclude Include="efi_dxe_emulator\efi_definitions.h" />
     <ClInclude Include="efi_dxe_emulator\efi_runtime_hooks.h" />
+    <ClInclude Include="efi_dxe_emulator\events.h" />
     <ClInclude Include="efi_dxe_emulator\global_cmds.h" />
     <ClInclude Include="efi_dxe_emulator\guids.h" />
     <ClInclude Include="efi_dxe_emulator\loader.h" />

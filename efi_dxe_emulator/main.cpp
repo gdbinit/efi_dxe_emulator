@@ -96,6 +96,7 @@
 #include "mem_utils.h"
 #include "guids.h"
 #include "sync.h"
+#include "events.h"
 
 extern struct bin_images_tailq g_images;
 struct configuration g_config;
@@ -477,6 +478,10 @@ main(int argc, const char * argv[])
     OUTPUT_MSG("[+] Starting main image emulation...");
     err = uc_emu_start(uc, main_image->tramp_start, main_image->tramp_end, 0, 0);
     VERIFY_UC_OPERATION_RET(err, EXIT_FAILURE, "Failed to start Unicorn emulation");
+
+    OUTPUT_MSG("[+] Starting notification routines emulation...");
+    dispatch_event_notification_routines(uc);
+
     OUTPUT_MSG("[+] All done, main image emulation complete.");
     context_cmd("", uc);
     prompt_loop();

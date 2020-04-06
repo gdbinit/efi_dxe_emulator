@@ -72,6 +72,9 @@
     <ClCompile Include="efi_dxe_emulator\tunnel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="efi_dxe_emulator\events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="efi_dxe_emulator\breakpoints.h">
@@ -144,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="efi_dxe_emulator\tunnel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efi_dxe_emulator\events.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

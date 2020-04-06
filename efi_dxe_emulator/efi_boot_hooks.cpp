@@ -82,6 +82,8 @@
 #include "unicorn_utils.h"
 #include "mem_utils.h"
 #include "guids.h"
+#include "events.h"
+#include "loader.h"
 
 static void hook_RaiseTPL(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 static void hook_RestoreTPL(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
@@ -668,6 +670,10 @@ hook_CreateEvent(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     DEBUG_MSG("\tNotifyContext: 0x%p", r_r9);
     DEBUG_MSG("\tEventPointer: 0x%p", event_ptr);
 
+    /* Write event handle */
+    EFI_EVENT Event = create_efi_event(uc, r_ecx, r_rdx, (EFI_EVENT_NOTIFY)r_r8, (void*)r_r9);
+    uc_mem_write(uc, event_ptr, &Event, sizeof(EFI_EVENT));
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
@@ -722,6 +728,7 @@ hook_SignalEvent(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");
 
     DEBUG_MSG("\tEvent: 0x%p", r_rcx);
+    signal_efi_event(uc, (EFI_EVENT)r_rcx);
 
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
