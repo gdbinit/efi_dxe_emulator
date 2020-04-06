@@ -105,7 +105,6 @@ EFI_SYSTEM_TABLE g_efi_table = {0};
 static int fix_relocations(uc_engine *uc, struct bin_image *image);
 static int load_image(char *target_file, int main);
 static int map_image_to_emulator(uc_engine *uc, struct bin_image *target_image);
-static int install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tramp_start, uint64_t *tramp_end);
 static int load_and_map_other_image(uc_engine *uc, char *image_path);
 static int parse_and_validate_PE_image(struct bin_image *target_image);
 
@@ -546,7 +545,7 @@ fix_relocations(uc_engine *uc, struct bin_image *image)
  * this is mostly to be applied to other binaries we want to map that implement protocols used by the main binary
  * so we execute them and when they reach the trampoline end we know execution is finished
  */
-static int
+int
 install_trampoline(uc_engine *uc, uint64_t target_addr, uint64_t *tramp_start, uint64_t *tramp_end)
 {
     uint8_t shellcode[] =

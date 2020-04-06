@@ -94,3 +94,4 @@ TAILQ_HEAD(bin_images_tailq, bin_image);
 int create_and_map_efi_system_table(uc_engine *uc);
 int load_and_map_main_image(char *image_path, uc_engine *uc);
 int load_and_map_protocols(uc_engine *uc, struct config_protocols_tailq *protocols);
+int install_trampoline(uc_engine* uc, uint64_t target_addr, uint64_t* tramp_start, uint64_t* tramp_end);
