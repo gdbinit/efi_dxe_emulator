@@ -905,6 +905,17 @@ hook_RegisterProtocolNotify(uc_engine *uc, uint64_t address, uint32_t size, void
     
     LOG_UC_BACKTRACE(uc, "RegisterProtocolNotify()");
     
+    /* read Protocol */
+    uint64_t r_rcx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RCX, &r_rcx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");
+
+    EFI_GUID Protocol = { 0 };
+    err = uc_mem_read(uc, r_rcx, &Protocol, sizeof(Protocol));
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read Protocol");
+
+    DEBUG_MSG("\tProtocol: %s (%s)", guid_to_string(&Protocol), get_guid_friendly_name(Protocol));
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
