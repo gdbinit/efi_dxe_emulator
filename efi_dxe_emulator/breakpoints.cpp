@@ -86,6 +86,7 @@
 #include "capstone_utils.h"
 #include "mem_utils.h"
 #include "string_ops.h"
+#include <stdexcept>
 
 struct breakpoints_tailq g_breakpoints = TAILQ_HEAD_INITIALIZER(g_breakpoints);
 
@@ -255,42 +256,35 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
 static int
 del_bpt_cmd(const char *exp, uc_engine *uc)
 {
-    errno = 0;
-    
-    char *token = NULL;
-    uint64_t bpt_addr = 0;
-    uint64_t bpt_nr = 0;
-    
-    char *local_exp = NULL;
-    char *local_exp_ptr = NULL;
-    local_exp_ptr = local_exp = strdup(exp);
-    if (local_exp == NULL)
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "bpd");
+
+    std::string token;
+    try
     {
-        ERROR_MSG("strdup failed");
-        return 0;
+        token = tokens.at(1);
     }
-    
-    strsep(&local_exp, " ");
-    token = strsep(&local_exp, " ");
-    free(local_exp_ptr);
-    
-    /* we need a target address */
-    if (token == NULL)
+    catch (const std::out_of_range&)
     {
+        /* we need a target address */
         ERROR_MSG("Missing argument(s).");
         return 0;
     }
+
     /* must be in 0x format */
-    if (strncmp(token, "0x", 2) == 0)
+    if (token.starts_with("0x"))
     {
-        bpt_addr = strtoull(token, NULL, 16);
-        del_breakpoint(bpt_addr);
+        auto bpt_addr = strtoull(token.c_str(), nullptr, 16);
+        if (del_breakpoint(bpt_addr) != 0)
+        {
+            ERROR_MSG("Breakpoint not found.");
+        }
         return 0;
     }
-    /* everything else is invalid */
+    /* decimal number implies breakpoint index */
     else
     {
-        bpt_nr = strtoull(token, NULL, 10);
+        auto bpt_nr = std::strtoull(token.c_str(), NULL, 10);
         if (errno == EINVAL || errno == ERANGE)
         {
             ERROR_MSG("Invalid argument(s).");
@@ -302,7 +296,10 @@ del_bpt_cmd(const char *exp, uc_engine *uc)
         {
             if (count == bpt_nr)
             {
-                del_breakpoint(tmp_entry->address);
+                if (del_breakpoint(tmp_entry->address) != 0)
+                {
+                    ERROR_MSG("Breakpoint not found.");
+                }
                 return 0;
             }
             count++;
