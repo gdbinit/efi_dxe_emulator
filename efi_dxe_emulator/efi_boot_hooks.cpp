@@ -633,6 +633,41 @@ hook_CreateEvent(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     
     LOG_UC_BACKTRACE(uc, "CreateEvent()");
     
+    /* Type */
+    uint32_t r_ecx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_ECX, &r_ecx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read ECX register");
+
+    /* NotifyTpl */
+    uint64_t r_rdx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RDX, &r_rdx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RDX register");
+
+    /* NotifyFunction */
+    uint64_t r_r8 = 0;
+    err = uc_reg_read(uc, UC_X86_REG_R8, &r_r8);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R8 register");
+
+    /* NotifyContext */
+    uint64_t r_r9 = 0;
+    err = uc_reg_read(uc, UC_X86_REG_R9, &r_r9);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read R9 register");
+
+    /* Event */
+    uint64_t r_rsp = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RSP, &r_rsp);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RSP register");
+
+    uint64_t event_ptr = 0;
+    err = uc_mem_read(uc, r_rsp + 5 * sizeof(uint64_t), &event_ptr, sizeof(event_ptr));
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read memory");
+
+    DEBUG_MSG("\tType: 0x%x", r_ecx);
+    DEBUG_MSG("\tNotifyTpl: %d", r_rdx);
+    DEBUG_MSG("\tNotifyFunction: 0x%p", r_r8);
+    DEBUG_MSG("\tNotifyContext: 0x%p", r_r9);
+    DEBUG_MSG("\tEventPointer: 0x%p", event_ptr);
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
@@ -681,6 +716,13 @@ hook_SignalEvent(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     
     LOG_UC_BACKTRACE(uc, "SignalEvent()");
     
+    /* Event */
+    uint64_t r_rcx = 0;
+    err = uc_reg_read(uc, UC_X86_REG_RCX, &r_rcx);
+    VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");
+
+    DEBUG_MSG("\tEvent: 0x%p", r_rcx);
+
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);
