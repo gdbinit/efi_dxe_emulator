@@ -143,6 +143,7 @@ add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type)
 int
 del_breakpoint(uint64_t target_addr)
 {
+    int err = -1;
     struct breakpoint *cur_entry = NULL;
     struct breakpoint *tmp_entry = NULL;
     TAILQ_FOREACH_SAFE(cur_entry, &g_breakpoints, entries, tmp_entry)
@@ -155,10 +156,11 @@ del_breakpoint(uint64_t target_addr)
             //                ERROR_MSG("Failed to delete Unicorn breakpoint hook for 0x%llx.", target_addr);
             //            }
             free(cur_entry);
+            err = 0;
             break;
         }
     }
-    return 0;
+    return err;
 }
 
 int
