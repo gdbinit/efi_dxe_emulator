@@ -22,7 +22,10 @@ EFI_EVENT create_efi_event(uc_engine * uc, UINT32 Type, EFI_TPL NotifyTpl, EFI_E
 void signal_efi_event(uc_engine* uc, EFI_EVENT Event)
 {
     auto ei = g_events.find(Event);
-    ei->second.signaled = true;
+    if (ei != g_events.end())
+    {
+        ei->second.signaled = true;
+    }
 }
 
 void dispatch_event_notification_routines(uc_engine* uc)
