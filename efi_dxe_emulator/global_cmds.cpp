@@ -87,6 +87,7 @@
 #include "string_ops.h"
 #include "protocols.h"
 #include "guids.h"
+#include "events.h"
 
 extern struct bin_images_tailq g_images;
 extern struct protocols_list_tailq g_installed_protocols;
@@ -199,6 +200,16 @@ info_cmd(const char *exp, uc_engine *uc)
             OUTPUT_MSG("GUID: %s", guid_to_string(&tmp_proto->guid));
             OUTPUT_MSG("Friendly name: %s", get_guid_friendly_name(tmp_proto->guid));
             OUTPUT_MSG("Interface: 0x%llx", tmp_proto->iface);
+        }
+    }
+    else if (token == "events")
+    {
+        for (const auto& ei : g_events)
+        {
+            OUTPUT_MSG("--- [EFI Event #%02p ] ---", ei.first);
+            OUTPUT_MSG("Notification routine: 0x%llx", ei.second.notify_routine);
+            OUTPUT_MSG("Notification context: 0x%llx", ei.second.notify_context);
+            OUTPUT_MSG("Signaled: %s", ei.second.signaled ? "TRUE" : "FALSE");
         }
     }
     /* everything else is invalid */

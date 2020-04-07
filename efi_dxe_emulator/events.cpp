@@ -3,18 +3,7 @@
 #include "loader.h"
 #include "logging.h"
 
-#include <map>
-
-struct EFI_EVENT_IMPL
-{
-    bool signaled;
-    uint64_t notify_routine;
-    uint64_t notify_context;
-    /* Trampoline for the notification routine */
-    uint64_t tramp[2];
-};
-
-static std::map<EFI_EVENT, EFI_EVENT_IMPL> g_events;
+std::map<EFI_EVENT, EFI_EVENT_IMPL> g_events;
 
 EFI_EVENT create_efi_event(uc_engine * uc, UINT32 Type, EFI_TPL NotifyTpl, EFI_EVENT_NOTIFY NotifyFunction, VOID* NotifyContext)
 {
