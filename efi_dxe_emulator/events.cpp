@@ -34,7 +34,7 @@ void dispatch_event_notification_routines(uc_engine* uc)
     {
         if (ei.second.signaled)
         {
-            DEBUG_MSG("Dispatching notification routine for event %p at %p", ei.first, ei.second.notify_routine);
+            DEBUG_MSG("Dispatching notification routine for event %x at 0x%p", ei.first, ei.second.notify_routine);
             uc_reg_write(uc, UC_X86_REG_RCX, &ei.first);
             uc_reg_write(uc, UC_X86_REG_RDX, &ei.second.notify_context);
             uc_emu_start(uc, ei.second.tramp[0], ei.second.tramp[1], 0, 0);
