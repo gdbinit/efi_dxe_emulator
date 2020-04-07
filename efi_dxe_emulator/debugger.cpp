@@ -92,6 +92,8 @@
 #include "mem_utils.h"
 #include "string_ops.h"
 #include "sync.h"
+#include <stdexcept>
+#include "events.h"
 
 extern EFI_SYSTEM_TABLE g_efi_table;
 
@@ -100,6 +102,7 @@ int examine_register_cmd(const char *exp, uc_engine *uc);
 int set_mem_cmd(const char *exp, uc_engine *uc);
 int print_guid_cmd(const char *exp, uc_engine *uc);
 int set_register_cmd(const char *exp, uc_engine *uc);
+int signal_event_cmd(const char* exp, uc_engine* uc);
 
 bool g_break = false;
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType);
@@ -116,6 +119,7 @@ register_debugger_cmds(uc_engine *uc)
     add_user_cmd("sr", NULL, set_register_cmd, "Set register.\n\nsr REGISTER VALUE\nREGISTER is a valid general register\nVALUE the new register value", uc);
     add_user_cmd("guid", NULL, print_guid_cmd, "Print GUID.\n\nguid ADDRESS", uc);
     add_user_cmd("disassemble", NULL, disassemble_cmd, "Displays disassembled code.\n\ndisassemble [ADDRESS]", uc);
+    add_user_cmd("signal", NULL, signal_event_cmd, "Signals an EFI_EVENT.\n\nsignal [EFI_EVENT]", uc);
 
     // Not a debugger command per se, but nevertheless we register it here.
     BOOL err = SetConsoleCtrlHandler(HandlerRoutine, TRUE);
@@ -603,6 +607,28 @@ disassemble_cmd(const char* exp, uc_engine* uc)
     }
 
     print_dissassembly(uc, r_rip);
+    return 0;
+}
+
+int
+signal_event_cmd(const char* exp, uc_engine* uc)
+{
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "signal");
+
+    uint64_t event_id;
+    try
+    {
+        event_id = strtoull(tokens.at(1).c_str(), nullptr, 0);
+    }
+    catch (const std::out_of_range&)
+    {
+        ERROR_MSG("Missing or invalid event id");
+        return 0;
+    }
+
+    signal_efi_event(uc, (EFI_EVENT)event_id);
+    dispatch_event_notification_routines(uc);
     return 0;
 }
 
