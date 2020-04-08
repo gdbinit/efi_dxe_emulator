@@ -188,67 +188,68 @@ find_breakpoint(uint64_t addr, int *type)
 static int
 add_bpt_cmd(const char *exp, uc_engine *uc)
 {
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "b");
+
     errno = 0;
     
-    char *token = NULL;
+    std::string token;
     uint64_t bpt_addr = 0;
     
-    char *local_exp = strdup(exp);
-    if (local_exp == NULL)
-    {
-        ERROR_MSG("strdup failed");
-        return 0;
-    }
-    char *local_exp_ptr = local_exp;
-    
-    strsep(&local_exp, " ");
-    token = strsep(&local_exp, " ");
-    
     /* we need a target address */
-    if (token == NULL)
+    try
+    {
+        token = tokens.at(1);
+    }
+    catch (const std::out_of_range&)
     {
         ERROR_MSG("Missing argument(s).");
-        free(local_exp_ptr);
         return 0;
     }
+
     /* must be in 0x format */
-    if (strncmp(token, "0x", 2) == 0)
+    if (token.starts_with("0x"))
     {
-        bpt_addr = strtoull(token, NULL, 16);
+        bpt_addr = strtoull(token.c_str(), NULL, 16);
         DEBUG_MSG("Breakpoint target address is 0x%llx", bpt_addr);
     }
     /* everything else is invalid */
     else
     {
         ERROR_MSG("Invalid argument(s).");
-        free(local_exp_ptr);
         return 0;
     }
     
     uint64_t bpt_len = 0;
     /* try to get a length, optional argument */
-    token = strsep(&local_exp, " ");
-    if (token != NULL)
+    try
     {
-        if (strncmp(token, "0x", 2) == 0)
+        token = tokens.at(2);
+    }
+    catch (const std::out_of_range&)
+    {
+        token = "";
+    }
+
+    if (!token.empty())
+    {
+        if (token.starts_with("0x"))
         {
-            bpt_len = strtoull(token, NULL, 16);
+            bpt_len = strtoull(token.c_str(), NULL, 16);
             DEBUG_MSG("Breakpoint length is 0x%llx.", bpt_len);
         }
         else
         {
-            bpt_len = strtoull(token, NULL, 10);
+            bpt_len = strtoull(token.c_str(), NULL, 10);
             if (errno == EINVAL || errno == ERANGE)
             {
                 ERROR_MSG("Invalid argument(s).");
-                free(local_exp_ptr);
                 return 0;
             }
             DEBUG_MSG("Breakpoint length is 0x%llx.", bpt_len);
         }
     }
     
-    free(local_exp_ptr);
     add_breakpoint(bpt_addr, bpt_len, kPermBreakpoint);
     return 0;
 }
