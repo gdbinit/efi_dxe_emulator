@@ -98,14 +98,14 @@ static void hook_UpdateCapsule(uc_engine *uc, uint64_t address, uint32_t size, v
 static void hook_QueryCapsuleCapabilities(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 static void hook_QueryVariableInfo(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 
-struct runtime_hooks
+struct _runtime_hooks
 {
     char name[64];
     int offset;
     void *hook;
 };
 
-struct runtime_hooks runtime_hooks[] = {
+struct _runtime_hooks runtime_hooks[] = {
     {
         .name = "GetTime",
         .offset = offsetof(EFI_RUNTIME_SERVICES, GetTime),
