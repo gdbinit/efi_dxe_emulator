@@ -64,6 +64,8 @@
 #pragma once
 
 #include <unicorn/unicorn.h>
+#include <string_view>
 
 int install_runtime_services(uc_engine *uc, uint64_t base_addr, size_t *out_count);
 char * lookup_runtime_services_table(int offset);
+uint64_t lookup_runtime_services_table(std::string_view name);

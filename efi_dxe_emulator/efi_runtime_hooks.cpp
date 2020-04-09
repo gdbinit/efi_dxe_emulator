@@ -236,6 +236,20 @@ lookup_runtime_services_table(int offset)
     return NULL;
 }
 
+uint64_t
+lookup_runtime_services_table(std::string_view name)
+{
+    size_t array_size = sizeof(runtime_hooks) / sizeof(*runtime_hooks);
+    for (int i = 0; i < array_size; i++)
+    {
+        if (name == runtime_hooks[i].name)
+        {
+            return runtime_hooks[i].addr;
+        }
+    }
+    return 0;
+}
+
 /*
  * EFI_STATUS(EFIAPI * EFI_GET_TIME) (OUT EFI_TIME *Time, OUT EFI_TIME_CAPABILITIES *Capabilities OPTIONAL)
  */
