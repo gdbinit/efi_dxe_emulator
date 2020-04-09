@@ -66,6 +66,7 @@
 #include <stdio.h>
 #include <sys/queue.h>
 #include <unicorn/unicorn.h>
+#include <string_view>
 
 enum bp_type
 {
@@ -79,11 +80,12 @@ struct breakpoint
     uint64_t address;
     uint64_t length;
     enum bp_type type;
+    char comment[64];
 };
 
 TAILQ_HEAD(breakpoints_tailq, breakpoint);
 
 void register_breakpoint_cmds(uc_engine *uc);
-int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type);
+int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type, std::string_view comment = "");
 int del_breakpoint(uint64_t target_addr);
 int find_breakpoint(uint64_t addr, int *type);

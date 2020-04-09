@@ -113,7 +113,7 @@ register_breakpoint_cmds(uc_engine *uc)
 }
 
 int
-add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type)
+add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type, std::string_view comment /* = "" */)
 {
     struct breakpoint *tmp_entry = NULL;
     
@@ -130,6 +130,8 @@ add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type)
     new_entry->address = target_addr;
     new_entry->length = target_len;
     new_entry->type = type;
+    strncpy(new_entry->comment, comment.data(), comment.length());
+    new_entry->comment[comment.length()] = '\0';
     /* we can't add to Unicorn hooks because it doesn't work so we just add to the breakpoint list */
     //        if (add_unicorn_hook(UC_HOOK_CODE, NULL, target_addr, target_addr + target_len) != 0)
     //        {
@@ -195,7 +197,8 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
     
     std::string token;
     uint64_t bpt_addr = 0;
-    
+    std::string comment;
+
     /* we need a target address */
     try
     {
@@ -223,6 +226,8 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
             ERROR_MSG("Invalid argument(s).");
             return 0;
         }
+
+        comment = token;
     }
     
     uint64_t bpt_len = 0;
@@ -255,7 +260,7 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
         }
     }
     
-    add_breakpoint(bpt_addr, bpt_len, kPermBreakpoint);
+    add_breakpoint(bpt_addr, bpt_len, kPermBreakpoint, comment);
     return 0;
 }
 
@@ -335,10 +340,11 @@ list_bpt_cmd(const char *exp, uc_engine *uc)
     }
     
     int i = 1;
-    OUTPUT_MSG("Num    Address                  Length");
+    OUTPUT_MSG("Num    Address                  Length    Comment");
     TAILQ_FOREACH(tmp_entry, &g_breakpoints, entries)
     {
-        OUTPUT_MSG("%3d    0x%016llx       %lld", i, tmp_entry->address, tmp_entry->length);
+        OUTPUT_MSG("%3d    0x%016llx       %lld         %s",
+                   i, tmp_entry->address, tmp_entry->length, tmp_entry->comment);
         i++;
     }
 
