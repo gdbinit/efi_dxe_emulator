@@ -213,7 +213,7 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
         bpt_addr = strtoull(token.c_str(), NULL, 16);
         DEBUG_MSG("Breakpoint target address is 0x%llx", bpt_addr);
     }
-    /* everything else is invalid */
+    /* check if name of boot/runtime service */
     else
     {
         bpt_addr = lookup_runtime_services_table(token);
