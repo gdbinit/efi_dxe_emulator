@@ -130,14 +130,14 @@ static void hook_CopyMem(uc_engine *uc, uint64_t address, uint32_t size, void *u
 static void hook_SetMem(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 static void hook_CreateEventEx(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 
-struct boot_hooks
+struct _boot_hooks
 {
     char name[64];
     int offset;
     void *hook;
 };
 
-struct boot_hooks boot_hooks[] = {
+struct _boot_hooks boot_hooks[] = {
     {
         .name = "RaiseTPL",
         .offset = offsetof(EFI_BOOT_SERVICES, RaiseTPL),
