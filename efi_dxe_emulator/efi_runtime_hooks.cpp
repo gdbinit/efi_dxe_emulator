@@ -103,6 +103,7 @@ struct _runtime_hooks
     char name[64];
     int offset;
     void *hook;
+    uint64_t addr;
 };
 
 struct _runtime_hooks runtime_hooks[] = {
@@ -206,7 +207,8 @@ install_runtime_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
     /* add a Unicorn hook to each service - each hook corresponds to the emulated function */
     for (int i = 0; i < array_size; i++)
     {
-        add_unicorn_hook(uc, UC_HOOK_CODE, runtime_hooks[i].hook, hooks_addr + hook_size * i, hooks_addr + hook_size * i);
+        runtime_hooks[i].addr = hooks_addr + hook_size * i;
+        add_unicorn_hook(uc, UC_HOOK_CODE, runtime_hooks[i].hook, runtime_hooks[i].addr, runtime_hooks[i].addr);
     }
 
     err = uc_mem_write(uc, base_addr, (void*)&runtime_table, sizeof(EFI_RUNTIME_SERVICES));
