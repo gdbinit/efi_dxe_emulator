@@ -186,7 +186,7 @@ log_unicorn_backtrace(uc_engine *uc, char *function_name, int type)
 }
 
 int
-convert_register_to_unicorn(char *src_reg)
+convert_register_to_unicorn(const char *src_reg)
 {
     if (strcasecmp(src_reg, "RAX") == 0)
     {

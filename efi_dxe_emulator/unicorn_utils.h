@@ -141,7 +141,7 @@ struct x86_debug_state64
 int initialize_unicorn_registers(uc_engine *uc);
 int allocate_emulation_mem(uc_engine *uc);
 int write_serial_number(uc_engine *uc, char *serial_number);
-int convert_register_to_unicorn(char *src_reg);
+int convert_register_to_unicorn(const char *src_reg);
 int get_x64_registers(uc_engine *uc, struct x86_thread_state64 *state);
 int get_x64_exception_registers(uc_engine *uc, struct x86_exception_state64 *state);
 int get_x64_debug_registers(uc_engine *uc, struct x86_debug_state64 *state);
