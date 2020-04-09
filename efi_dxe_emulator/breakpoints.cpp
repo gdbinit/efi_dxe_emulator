@@ -217,6 +217,7 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
     else
     {
         bpt_addr = lookup_runtime_services_table(token);
+        bpt_addr = bpt_addr ? bpt_addr : lookup_boot_services_table(token);
         if (bpt_addr == 0)
         {
             ERROR_MSG("Invalid argument(s).");
