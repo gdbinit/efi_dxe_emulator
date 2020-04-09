@@ -135,6 +135,7 @@ struct _boot_hooks
     char name[64];
     int offset;
     void *hook;
+    uint64_t addr;
 };
 
 struct _boot_hooks boot_hooks[] = {
@@ -386,7 +387,8 @@ install_boot_services(uc_engine *uc, uint64_t base_addr, size_t *out_count)
     
     for (int i = 0; i < array_size; i++)
     {
-        add_unicorn_hook(uc, UC_HOOK_CODE, boot_hooks[i].hook, hooks_addr + hook_size * i, hooks_addr + hook_size * i);
+        boot_hooks[i].addr = hooks_addr + hook_size * i;
+        add_unicorn_hook(uc, UC_HOOK_CODE, boot_hooks[i].hook, boot_hooks[i].addr, boot_hooks[i].addr);
     }
     
     err = uc_mem_write(uc, base_addr, (void*)&boot_table, sizeof(EFI_BOOT_SERVICES));
