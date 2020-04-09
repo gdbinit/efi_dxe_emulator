@@ -216,8 +216,12 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
     /* everything else is invalid */
     else
     {
-        ERROR_MSG("Invalid argument(s).");
-        return 0;
+        bpt_addr = lookup_runtime_services_table(token);
+        if (bpt_addr == 0)
+        {
+            ERROR_MSG("Invalid argument(s).");
+            return 0;
+        }
     }
     
     uint64_t bpt_len = 0;
