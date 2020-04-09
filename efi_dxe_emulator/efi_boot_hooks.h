@@ -65,8 +65,10 @@
 
 #include <unicorn/unicorn.h>
 #include <sys/queue.h>
+#include <string_view>
 
 #include "efi_definitions.h"
 
 int install_boot_services(uc_engine *uc, uint64_t base_addr, size_t *out_count);
 char * lookup_boot_services_table(int offset);
+uint64_t lookup_boot_services_table(std::string_view name);

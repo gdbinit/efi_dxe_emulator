@@ -416,6 +416,20 @@ lookup_boot_services_table(int offset)
     return NULL;
 }
 
+uint64_t
+lookup_boot_services_table(std::string_view name)
+{
+    size_t array_size = sizeof(boot_hooks) / sizeof(*boot_hooks);
+    for (int i = 0; i < array_size; i++)
+    {
+        if (name == boot_hooks[i].name)
+        {
+            return boot_hooks[i].addr;
+        }
+    }
+    return NULL;
+}
+
 /*
  * EFI_TPL(EFIAPI * EFI_RAISE_TPL) (IN EFI_TPL NewTpl)
  */
