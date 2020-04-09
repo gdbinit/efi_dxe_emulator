@@ -462,7 +462,7 @@ main(int argc, const char * argv[])
     }
     
     /* add breakpoint on entrypoint - we always start the emulator stopped on entrypoint */
-    if (add_breakpoint(main_image->base_addr + main_image->entrypoint, 0, kPermBreakpoint) != 0)
+    if (add_breakpoint(main_image->base_addr + main_image->entrypoint, 0, kPermBreakpoint, "Entrypoint") != 0)
     {
         ERROR_MSG("Failed to add entrypoint breakpoint.");
         return EXIT_FAILURE;
