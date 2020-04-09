@@ -447,61 +447,30 @@ set_mem_cmd(const char *exp, uc_engine *uc)
 int
 set_register_cmd(const char *exp, uc_engine *uc)
 {
-    errno = 0;
-    
-    size_t exp_len = strlen(exp) + 1;
-    if (exp_len <= 1)
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "sr");
+
+    if (tokens.size() < 3)
     {
-        ERROR_MSG("Bad expression.");
-        return 0;
-    }
-    
-    char *local_exp = NULL;
-    char *local_exp_ptr = NULL;
-    local_exp_ptr = local_exp = strdup(exp);
-    if (local_exp == NULL)
-    {
-        ERROR_MSG("strdup failed");
+        ERROR_MSG("Bad usage.");
         return 0;
     }
 
-    char *arg_register = NULL;
-    char *arg_value = NULL;
-    strsep(&local_exp, " ");
-    arg_register = strsep(&local_exp, " ");
-    arg_value = strsep(&local_exp, " ");
-    free(local_exp_ptr);
-    
-    if (arg_register == NULL || arg_value == NULL)
-    {
-        ERROR_MSG("Missing arguments.");
-        return 0;
-    }
+    std::string arg_register = tokens.at(1);
+    std::string arg_value = tokens.at(2);
+    errno = 0;
     
     int target_register = UC_X86_REG_INVALID;
     
-    if (arg_register[0] == 'R' ||
-        arg_register[0] == 'r' ||
-        arg_register[0] == 'E' ||
-        arg_register[0] == 'e')
-    {
-        ;
-    }
-    else
-    {
-        DEBUG_MSG("Invalid register argument.");
-        return 0;
-    }
-    
     /* convert this to Unicorn register */
-    target_register = convert_register_to_unicorn(arg_register);
+    target_register = convert_register_to_unicorn(arg_register.c_str());
     if (target_register == UC_X86_REG_INVALID)
     {
         ERROR_MSG("Invalid target register.");
         return 0;
     }
     
-    uint64_t target_value = strtoull(arg_value, NULL, 0);
+    uint64_t target_value = strtoull(arg_value.c_str(), NULL, 0);
     if (errno == EINVAL || errno == ERANGE)
     {
         ERROR_MSG("Invalid value to write.");
