@@ -104,8 +104,8 @@ typedef char CHAR8;
 typedef signed char INT8;
 
 //This may be 64 bit in later phases, but in the PEI phase it is confirmed to be 32 bits
-//typedef UINT64 UINTN;
-typedef UINT32 UINTN;
+typedef UINT64 UINTN;
+//typedef UINT32 UINTN;
 
 typedef INT64 INTN;
 
