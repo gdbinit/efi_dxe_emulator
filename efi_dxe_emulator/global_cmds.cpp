@@ -107,7 +107,7 @@ register_global_cmds(uc_engine *uc)
     add_user_cmd("help", "h", help_cmd, "Help.\n\nhelp", uc);
     add_user_cmd("continue", "c", continue_cmd, "Continue running.\n\ncontinue", uc);
     add_user_cmd("info", NULL, info_cmd, "Info.\n\ninfo", uc);
-    add_user_cmd("history", NULL, history_cmd, "Display comand line history.\n\nhistory", uc);
+    add_user_cmd("history", NULL, history_cmd, "Display command line history.\n\nhistory", uc);
 }
 
 #pragma endregion
