@@ -103,6 +103,7 @@ int set_mem_cmd(const char *exp, uc_engine *uc);
 int print_guid_cmd(const char *exp, uc_engine *uc);
 int set_register_cmd(const char *exp, uc_engine *uc);
 int signal_event_cmd(const char* exp, uc_engine* uc);
+int print_status_cmd(const char* exp, uc_engine* uc);
 
 bool g_break = false;
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType);
@@ -120,6 +121,7 @@ register_debugger_cmds(uc_engine *uc)
     add_user_cmd("guid", NULL, print_guid_cmd, "Print GUID.\n\nguid ADDRESS", uc);
     add_user_cmd("disassemble", NULL, disassemble_cmd, "Displays disassembled code.\n\ndisassemble [ADDRESS]", uc);
     add_user_cmd("signal", NULL, signal_event_cmd, "Signals an EFI_EVENT.\n\nsignal [EFI_EVENT]", uc);
+    add_user_cmd("status", NULL, print_status_cmd, "Prints an EFI_STATUS.\n\nstatus [EFI_STATUS]", uc);
 
     // Not a debugger command per se, but nevertheless we register it here.
     BOOL err = SetConsoleCtrlHandler(HandlerRoutine, TRUE);
@@ -598,6 +600,139 @@ signal_event_cmd(const char* exp, uc_engine* uc)
 
     signal_efi_event(uc, (EFI_EVENT)event_id);
     dispatch_event_notification_routines(uc);
+    return 0;
+}
+
+int
+print_status_cmd(const char* exp, uc_engine* uc)
+{
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "status");
+
+    std::string token;
+    try
+    {
+        token = tokens.at(1);
+    }
+    catch (const std::out_of_range&)
+    {
+        DEBUG_MSG("Missing status code.");
+        return 0;
+    }
+
+    EFI_STATUS status = strtoull(token.c_str(), nullptr, 0);
+    switch (status)
+    {
+    case EFI_SUCCESS:
+        OUTPUT_MSG("EFI_SUCCESS");
+        break;
+    case EFI_LOAD_ERROR:
+        OUTPUT_MSG("EFI_LOAD_ERROR");
+        break;
+    case EFI_INVALID_PARAMETER:
+        OUTPUT_MSG("EFI_INVALID_PARAMETER");
+        break;
+    case EFI_UNSUPPORTED:
+        OUTPUT_MSG("EFI_UNSUPPORTED");
+        break;
+    case EFI_BAD_BUFFER_SIZE:
+        OUTPUT_MSG("EFI_BAD_BUFFER_SIZE");
+        break;
+    case EFI_BUFFER_TOO_SMALL:
+        OUTPUT_MSG("EFI_BUFFER_TOO_SMALL");
+        break;
+    case EFI_NOT_READY:
+        OUTPUT_MSG("EFI_NOT_READY");
+        break;
+    case EFI_DEVICE_ERROR:
+        OUTPUT_MSG("EFI_DEVICE_ERROR");
+        break;
+    case EFI_WRITE_PROTECTED:
+        OUTPUT_MSG("EFI_WRITE_PROTECTED");
+        break;
+    case EFI_OUT_OF_RESOURCES:
+        OUTPUT_MSG("EFI_OUT_OF_RESOURCES");
+        break;
+    case EFI_VOLUME_CORRUPTED:
+        OUTPUT_MSG("EFI_VOLUME_CORRUPTED");
+        break;
+    case EFI_VOLUME_FULL:
+        OUTPUT_MSG("EFI_VOLUME_FULL");
+        break;
+    case EFI_NO_MEDIA:
+        OUTPUT_MSG("EFI_NO_MEDIA");
+        break;
+    case EFI_MEDIA_CHANGED:
+        OUTPUT_MSG("EFI_MEDIA_CHANGED");
+        break;
+    case EFI_NOT_FOUND:
+        OUTPUT_MSG("EFI_NOT_FOUND");
+        break;
+    case EFI_ACCESS_DENIED:
+        OUTPUT_MSG("EFI_ACCESS_DENIED");
+        break;
+    case EFI_NO_RESPONSE:
+        OUTPUT_MSG("EFI_NO_RESPONSE");
+        break;
+    case EFI_NO_MAPPING:
+        OUTPUT_MSG("EFI_NO_MAPPING");
+        break;
+    case EFI_TIMEOUT:
+        OUTPUT_MSG("EFI_TIMEOUT");
+        break;
+    case EFI_NOT_STARTED:
+        OUTPUT_MSG("EFI_NOT_STARTED");
+        break;
+    case EFI_ALREADY_STARTED:
+        OUTPUT_MSG("EFI_ALREADY_STARTED");
+        break;
+    case EFI_ABORTED:
+        OUTPUT_MSG("EFI_ABORTED");
+        break;
+    case EFI_ICMP_ERROR:
+        OUTPUT_MSG("EFI_ICMP_ERROR");
+        break;
+    case EFI_TFTP_ERROR:
+        OUTPUT_MSG("EFI_TFTP_ERROR");
+        break;
+    case EFI_PROTOCOL_ERROR:
+        OUTPUT_MSG("EFI_PROTOCOL_ERROR");
+        break;
+    case EFI_INCOMPATIBLE_VERSION:
+        OUTPUT_MSG("EFI_INCOMPATIBLE_VERSION");
+        break;
+    case EFI_SECURITY_VIOLATION:
+        OUTPUT_MSG("EFI_SECURITY_VIOLATION");
+        break;
+    case EFI_CRC_ERROR:
+        OUTPUT_MSG("EFI_CRC_ERROR");
+        break;
+    case EFI_END_OF_MEDIA:
+        OUTPUT_MSG("EFI_END_OF_MEDIA");
+        break;
+    case EFI_END_OF_FILE:
+        OUTPUT_MSG("EFI_END_OF_FILE");
+        break;
+    case EFI_INVALID_LANGUAGE:
+        OUTPUT_MSG("EFI_INVALID_LANGUAGE");
+        break;
+    case EFI_WARN_UNKNOWN_GLYPH:
+        OUTPUT_MSG("EFI_WARN_UNKNOWN_GLYPH");
+        break;
+    case EFI_WARN_DELETE_FAILURE:
+        OUTPUT_MSG("EFI_WARN_DELETE_FAILURE");
+        break;
+    case EFI_WARN_WRITE_FAILURE:
+        OUTPUT_MSG("EFI_WARN_WRITE_FAILURE");
+        break;
+    case EFI_WARN_BUFFER_TOO_SMALL:
+        OUTPUT_MSG("EFI_WARN_BUFFER_TOO_SMALL");
+        break;
+    default:
+        WARNING_MSG("Unrecognized EFI_STATUS 0x%llx", status);
+        break;
+    }
+
     return 0;
 }
 
