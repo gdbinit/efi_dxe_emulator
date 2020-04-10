@@ -196,15 +196,15 @@ hook_code(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
         g_break = false;
     }
 
-    int type = 0;
-    if (find_breakpoint(address, &type) == 0)
+    bp_flags flags;
+    if (find_breakpoint(address, &flags) == 0)
     {
         /* display current CPU context like gdbinit */
         context_cmd(NULL, uc);
         /* and let the user take control */
         prompt_loop();
         /* if it's a temporary breakpoint remove it from the list */
-        if (type == kTempBreakpoint)
+        if (BooleanFlagOn(flags, kTempBreakpoint))
         {
             del_breakpoint(address);
         }
@@ -271,6 +271,32 @@ hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, i
     DEBUG_MSG("Unmapped mem hit 0x%llx", address);
     /* and let the user take control */
     prompt_loop();
+    return 0;
+}
+
+bool
+hook_valid_mem(uc_engine* uc, uc_mem_type type, uint64_t address, int size, int64_t value, void* user_data)
+{
+    bp_flags flags;
+    if (find_breakpoint(address, &flags) == 0)
+    {
+        if (!BooleanFlagOn(flags, kDataBreakpoint))
+        {
+            /* not a data breakpoint */
+            return 0;
+        }
+
+        /* display current CPU context like gdbinit */
+        context_cmd(NULL, uc);
+        /* and let the user take control */
+        prompt_loop();
+        /* if it's a temporary breakpoint remove it from the list */
+        if (BooleanFlagOn(flags, kTempBreakpoint))
+        {
+            del_breakpoint(address);
+        }
+    }
+
     return 0;
 }
 

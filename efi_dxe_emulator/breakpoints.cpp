@@ -90,7 +90,8 @@
 
 struct breakpoints_tailq g_breakpoints = TAILQ_HEAD_INITIALIZER(g_breakpoints);
 
-static int add_bpt_cmd(const char *exp, uc_engine *uc);
+static int add_bpt_cmd(const char* exp, uc_engine* uc);
+static int add_data_bpt_cmd(const char* exp, uc_engine* uc);
 static int del_bpt_cmd(const char *exp, uc_engine *uc);
 static int list_bpt_cmd(const char *exp, uc_engine *uc);
 static int stepo_cmd(const char *exp, uc_engine *uc);
@@ -104,6 +105,7 @@ void
 register_breakpoint_cmds(uc_engine *uc)
 {
     add_user_cmd("b", NULL, add_bpt_cmd, "Install breakpoint.\n\nb ADDRESS", uc);
+    add_user_cmd("ba", NULL, add_data_bpt_cmd, "Install data breakpoint.\n\nb ADDRESS SIZE", uc);
     add_user_cmd("bpd", NULL, del_bpt_cmd, "Remove breakpoint.\n\nbpd ADDRESS", uc);
     add_user_cmd("bpl", NULL, list_bpt_cmd, "List all installed breakpoints.\n\nbpl", uc);
     add_user_cmd("stepo", "so", stepo_cmd, "Step over code.\n\nstepo", uc);
@@ -113,7 +115,7 @@ register_breakpoint_cmds(uc_engine *uc)
 }
 
 int
-add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type, std::string_view comment /* = "" */)
+add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags type, std::string_view comment /* = "" */)
 {
     struct breakpoint *tmp_entry = NULL;
     
@@ -129,7 +131,7 @@ add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type, std
     auto new_entry = static_cast<struct breakpoint *>(my_malloc(sizeof(struct breakpoint)));
     new_entry->address = target_addr;
     new_entry->length = target_len;
-    new_entry->type = type;
+    new_entry->flags = type;
     strncpy(new_entry->comment, comment.data(), comment.length());
     new_entry->comment[comment.length()] = '\0';
     /* we can't add to Unicorn hooks because it doesn't work so we just add to the breakpoint list */
@@ -167,19 +169,19 @@ del_breakpoint(uint64_t target_addr)
 }
 
 int
-find_breakpoint(uint64_t addr, int *type)
+find_breakpoint(uint64_t addr, bp_flags *flags)
 {
     struct breakpoint *tmp_entry = NULL;
     TAILQ_FOREACH(tmp_entry, &g_breakpoints, entries)
     {
         if (addr >= tmp_entry->address && addr <= (tmp_entry->address + tmp_entry->length))
         {
-            *type = tmp_entry->type;
+            *flags = tmp_entry->flags;
             return 0;
         }
     }
-    
-    *type = -1;
+
+    *flags = (bp_flags)-1;
     return -1;
 }
 
@@ -260,7 +262,26 @@ add_bpt_cmd(const char *exp, uc_engine *uc)
         }
     }
     
-    add_breakpoint(bpt_addr, bpt_len, kPermBreakpoint, comment);
+    add_breakpoint(bpt_addr, bpt_len, (bp_flags)0, comment);
+    return 0;
+}
+
+static int
+add_data_bpt_cmd(const char* exp, uc_engine* uc)
+{
+    auto tokens = tokenize(exp);
+    _ASSERT(tokens.at(0) == "ba");
+
+    if (tokens.size() < 3)
+    {
+        OUTPUT_MSG("Not enough arguments.");
+        return 0;
+    }
+
+    uint64_t address = strtoull(tokens.at(1).c_str(), nullptr, 0);
+    uint32_t size = strtoul(tokens.at(2).c_str(), nullptr, 0);
+
+    add_breakpoint(address, size, kDataBreakpoint, "Data breakpoint");
     return 0;
 }
 

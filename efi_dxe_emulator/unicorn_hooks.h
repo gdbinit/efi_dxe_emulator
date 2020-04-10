@@ -74,4 +74,5 @@ void hook_interrupt(uc_engine *uc, uint32_t intno, void *user_data);
 void hook_code(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 void hook_caller(uc_engine *uc, uint64_t address, uint32_t size, void *user_data);
 bool hook_unmapped_mem(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
+bool hook_valid_mem(uc_engine* uc, uc_mem_type type, uint64_t address, int size, int64_t value, void* user_data);
 bool hook_invalid_insn(uc_engine* uc, void* user_data);

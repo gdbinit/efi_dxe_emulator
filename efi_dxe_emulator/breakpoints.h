@@ -68,10 +68,30 @@
 #include <unicorn/unicorn.h>
 #include <string_view>
 
-enum bp_type
+//
+// These macros are used to test, set and clear flags respectively
+//
+
+#ifndef FlagOn
+#define FlagOn(_F,_SF)        ((_F) & (_SF))
+#endif
+
+#ifndef BooleanFlagOn
+#define BooleanFlagOn(F,SF)   ((bool)(((F) & (SF)) != 0))
+#endif
+
+#ifndef SetFlag
+#define SetFlag(_F,_SF)       ((_F) |= (_SF))
+#endif
+
+#ifndef ClearFlag
+#define ClearFlag(_F,_SF)     ((_F) &= ~(_SF))
+#endif
+
+enum bp_flags
 {
-    kPermBreakpoint = 0,
-    kTempBreakpoint
+    kTempBreakpoint = 1,
+    kDataBreakpoint = 2,
 };
 
 struct breakpoint
@@ -79,13 +99,13 @@ struct breakpoint
     TAILQ_ENTRY(breakpoint) entries;
     uint64_t address;
     uint64_t length;
-    enum bp_type type;
+    enum bp_flags flags;
     char comment[64];
 };
 
 TAILQ_HEAD(breakpoints_tailq, breakpoint);
 
 void register_breakpoint_cmds(uc_engine *uc);
-int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_type type, std::string_view comment = "");
+int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags type, std::string_view comment = "");
 int del_breakpoint(uint64_t target_addr);
-int find_breakpoint(uint64_t addr, int *type);
+int find_breakpoint(uint64_t addr, bp_flags *flags);
