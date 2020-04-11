@@ -115,7 +115,7 @@ register_breakpoint_cmds(uc_engine *uc)
 }
 
 int
-add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags type, std::string_view comment /* = "" */)
+add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags flags, std::string_view comment /* = "" */)
 {
     struct breakpoint *tmp_entry = NULL;
     
@@ -131,7 +131,7 @@ add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags type, st
     auto new_entry = static_cast<struct breakpoint *>(my_malloc(sizeof(struct breakpoint)));
     new_entry->address = target_addr;
     new_entry->length = target_len;
-    new_entry->flags = type;
+    new_entry->flags = flags;
     strncpy(new_entry->comment, comment.data(), comment.length());
     new_entry->comment[comment.length()] = '\0';
     /* we can't add to Unicorn hooks because it doesn't work so we just add to the breakpoint list */

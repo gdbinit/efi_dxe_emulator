@@ -106,6 +106,6 @@ struct breakpoint
 TAILQ_HEAD(breakpoints_tailq, breakpoint);
 
 void register_breakpoint_cmds(uc_engine *uc);
-int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags type, std::string_view comment = "");
+int add_breakpoint(uint64_t target_addr, uint64_t target_len, enum bp_flags flags, std::string_view comment = "");
 int del_breakpoint(uint64_t target_addr);
 int find_breakpoint(uint64_t addr, bp_flags *flags);
