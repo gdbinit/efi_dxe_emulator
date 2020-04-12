@@ -72,3 +72,4 @@ int find_next_instruction(uc_engine *uc, uint64_t src_addr, uint64_t *dst_addr, 
 int retrieve_capstone_register_contents(uc_engine *uc, x86_reg reg, uint64_t *out_value);
 char * retrieve_efi_call(uc_engine *uc, int64_t offset, unsigned int reg);
 void print_dissassembly(uc_engine *uc, uint64_t address);
+int get_instruction(uc_engine* uc, uint64_t address, cs_insn** insn);

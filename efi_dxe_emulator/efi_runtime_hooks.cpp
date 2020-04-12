@@ -80,6 +80,7 @@
 #include "unicorn_utils.h"
 #include "mem_utils.h"
 #include "guids.h"
+#include "taint.h"
 
 extern struct nvram_vars_tailhead g_nvram_vars;
 
@@ -433,6 +434,21 @@ hook_GetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
             ret = EFI_UNSUPPORTED;
             goto out;
         }
+
+        /* taint the entire data buffer returned to the caller */
+        OUTPUT_TAINT("Tainting address range: 0x%llx-0x%llx", Data, Data + DataSize);
+        for (uint64_t t = Data; t < Data + DataSize; t++)
+        {
+            tainted_addresses.push_back(t);
+        }
+
+        OUTPUT_TAINT("Tainting address range: 0x%llx-0x%llx", r_r9 + sizeof(DataSize));
+        /* taint the data size as well*/
+        for (uint64_t t = 0; t < DataSize; t++)
+        {
+            tainted_addresses.push_back(r_r9 + t);
+        }
+
         ret = EFI_SUCCESS;
         goto out;
     }

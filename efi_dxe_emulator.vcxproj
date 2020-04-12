@@ -144,6 +144,7 @@
     <ClCompile Include="efi_dxe_emulator\protocols.cpp" />
     <ClCompile Include="efi_dxe_emulator\string_ops.cpp" />
     <ClCompile Include="efi_dxe_emulator\sync.cpp" />
+    <ClCompile Include="efi_dxe_emulator\taint.cpp" />
     <ClCompile Include="efi_dxe_emulator\tunnel.cpp" />
     <ClCompile Include="efi_dxe_emulator\unicorn_hooks.cpp" />
     <ClCompile Include="efi_dxe_emulator\unicorn_utils.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="efi_dxe_emulator\protocols.h" />
     <ClInclude Include="efi_dxe_emulator\string_ops.h" />
     <ClInclude Include="efi_dxe_emulator\sync.h" />
+    <ClInclude Include="efi_dxe_emulator\taint.h" />
     <ClInclude Include="efi_dxe_emulator\tunnel.h" />
     <ClInclude Include="efi_dxe_emulator\unicorn_hooks.h" />
     <ClInclude Include="efi_dxe_emulator\unicorn_macros.h" />

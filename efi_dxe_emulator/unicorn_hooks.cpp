@@ -89,6 +89,9 @@
 #include "loader.h"
 #include "unicorn_macros.h"
 #include "mem_utils.h"
+#include "capstone_utils.h"
+#include "taint.h"
+#include <algorithm>
 
 struct unicorn_hooks
 {
@@ -208,6 +211,88 @@ hook_code(uc_engine *uc, uint64_t address, uint32_t size, void *user_data)
         {
             del_breakpoint(address);
         }
+    }
+
+    cs_insn* insn = NULL;
+    get_instruction(uc, address, &insn);
+
+    const auto& _1st_opnd = insn->detail->x86.operands[0];
+    const auto& _2nd_opnd = insn->detail->x86.operands[1];
+    if ((_1st_opnd.type == X86_OP_REG) &&
+        (_1st_opnd._access == CS_AC_WRITE) &&
+        (_2nd_opnd.type == X86_OP_MEM) &&
+        (_2nd_opnd._access == CS_AC_READ))
+    {
+        /* memory to register */
+        uint64_t base = 0;
+        retrieve_capstone_register_contents(uc, _2nd_opnd.mem.base, &base);
+        auto eff_addr = base + _2nd_opnd.mem.disp;
+        if (std::find(tainted_addresses.begin(), tainted_addresses.end(), eff_addr) == tainted_addresses.end())
+        {
+            /* un-taint register */
+            if (removeRegTainted(_1st_opnd.reg))
+            {
+                OUTPUT_TAINT("Un-taint register at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+            }
+            return;
+        }
+
+        //DEBUG_MSG("Address %ull is tainted", eff_addr);
+        //DEBUG_MSG("%s %s", insn->mnemonic, insn->op_str);
+        /* taint the register */
+        if (taintReg(_1st_opnd.reg))
+        {
+            OUTPUT_TAINT("Tainting register at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+        }
+    }
+    else if ((_1st_opnd.type == X86_OP_REG) &&
+             (_1st_opnd._access == CS_AC_WRITE) &&
+             (_2nd_opnd.type == X86_OP_REG) &&
+             (_2nd_opnd._access == CS_AC_READ))
+    {
+        /* register to register */
+        if (checkAlreadyRegTainted(_2nd_opnd.reg))
+        {
+            if (taintReg(_1st_opnd.reg))
+            {
+                OUTPUT_TAINT("Tainting register at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+            }
+        }
+        else
+        {
+            if (removeRegTainted(_1st_opnd.reg))
+            {
+                OUTPUT_TAINT("Removing taint from register at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+            }
+        }
+    }
+    else if ((_1st_opnd.type == X86_OP_MEM) &&
+             (_1st_opnd._access == CS_AC_WRITE) &&
+             (_2nd_opnd.type == X86_OP_REG) &&
+             (_2nd_opnd._access == CS_AC_READ))
+    {
+        /* register to memory */
+        uint64_t base = 0;
+        retrieve_capstone_register_contents(uc, _1st_opnd.mem.base, &base);
+        auto eff_addr = base + _1st_opnd.mem.disp;
+
+        if (checkAlreadyRegTainted(_2nd_opnd.reg))
+        {
+            /* taint all memory region*/
+            OUTPUT_TAINT("Tainting memory at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+            tainted_addresses.push_back(eff_addr);
+        }
+        else
+        {
+            /* remove taint, in case it was tainted */
+            if (removeMemTainted(eff_addr))
+            {
+                OUTPUT_TAINT("Removing taint from memory at 0x%llx: %s %s", address, insn->mnemonic, insn->op_str);
+            }
+        }
+
+        
+        //DEBUG_MSG("%s %s", insn->mnemonic, insn->op_str);
     }
 }
 
