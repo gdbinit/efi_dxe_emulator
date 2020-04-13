@@ -104,7 +104,7 @@ static int cfz_cmd(const char *exp, uc_engine *uc);
 void
 register_breakpoint_cmds(uc_engine *uc)
 {
-    add_user_cmd("b", NULL, add_bpt_cmd, "Install breakpoint.\n\nb ADDRESS", uc);
+    add_user_cmd("bp", NULL, add_bpt_cmd, "Install breakpoint.\n\nb ADDRESS", uc);
     add_user_cmd("ba", NULL, add_data_bpt_cmd, "Install data breakpoint.\n\nb ADDRESS SIZE", uc);
     add_user_cmd("bpd", NULL, del_bpt_cmd, "Remove breakpoint.\n\nbpd ADDRESS", uc);
     add_user_cmd("bpl", NULL, list_bpt_cmd, "List all installed breakpoints.\n\nbpl", uc);
