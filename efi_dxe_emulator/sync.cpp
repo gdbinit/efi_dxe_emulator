@@ -3,9 +3,12 @@
 #include "logging.h"
 #include "tunnel.h"
 #include "loader.h"
+#include "string_ops.h"
+#include "cmds.h"
 
 #include <unicorn/unicorn.h>
 #include <sys/queue.h>
+#include <stdexcept>
 
 ULONG64 g_Offset = NULL;
 ULONG64 g_Base = EXEC_ADDRESS;
@@ -15,6 +18,64 @@ static CHAR* g_DefaultHost = "127.0.0.1";
 static CHAR* g_DefaultPort = "9100";
 
 extern struct bin_images_tailq g_images;
+
+static int sync_bc_cmd(const char* exp, uc_engine* uc);
+
+void
+register_sync_cmds(uc_engine* uc)
+{
+    add_user_cmd("bc", NULL, sync_bc_cmd, "Sets background color for sync.\n\nb ADDRESS", uc);
+}
+
+static int
+sync_bc_cmd(const char *exp, uc_engine *uc)
+{
+    auto tokens = tokenize(exp);
+    //_ASSERT(tokens.at(0) == "bc");
+
+    if (tokens.size() < 2)
+    {
+        OUTPUT_MSG("Usage error");
+        return 0;
+    }
+
+    auto mode = tokens.at(1);
+    char* rgb_msg[64] = { 0 };
+    char* msg;
+
+    if (mode == "on")
+    {
+        msg = "on";
+    }
+    else if (mode == "off")
+    {
+        msg = "off";
+    }
+    else if (mode == "set")
+    {
+        uint32_t color = 0;
+        try
+        {
+            color = strtoul(tokens.at(2).c_str(), nullptr, 16);
+            color = htonl(color) >> 8;
+        }
+        catch (const std::out_of_range&)
+        {
+            OUTPUT_MSG("Invalid color value");
+            return 0;
+        }
+        _snprintf_s((char*)rgb_msg, 64, _TRUNCATE, "%s\", \"rgb\":%lu, \"reserved\":\"", "set", color);
+        msg = (char*)rgb_msg;
+    }
+    else
+    {
+        OUTPUT_MSG("Invalid mode");
+        return 0;
+    }
+
+    HRESULT hRes = TunnelSend("[notice]{\"type\":\"bc\",\"msg\":\"%s\",\"base\":%llu,\"offset\":%llu}\n", msg, g_Base, g_Offset);
+    return 0;
+}
 
 // Update state and send info to client: eip module's base address, offset, name
 int

@@ -302,7 +302,8 @@ main(int argc, const char * argv[])
     register_global_cmds(uc);
     register_breakpoint_cmds(uc);
     register_nvram_cmds(uc);
-    
+    register_sync_cmds(uc);
+
     /* allocate the different memory areas for executables, stack, heap, efi services, etc */
     if (allocate_emulation_mem(uc) != 0)
     {
