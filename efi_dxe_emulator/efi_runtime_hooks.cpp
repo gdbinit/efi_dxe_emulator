@@ -604,8 +604,8 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     VERIFY_UC_OPERATION_VOID(err, "Failed to read RCX register");
     /* copy the VariableName from Unicorn memory */
     /* XXX: max 256 wide chars */
-    CHAR16 var_name[256+1] = {0};
-    CHAR16 *var_name_ptr = var_name;
+    wchar_t var_name[256+1] = {0};
+    wchar_t *var_name_ptr = var_name;
     err = uc_mem_read(uc, r_rcx, var_name, sizeof(var_name));
     VERIFY_UC_OPERATION_NORET(err, "Failed to read VariableName")
     uint32_t length = StrLen(var_name_ptr);

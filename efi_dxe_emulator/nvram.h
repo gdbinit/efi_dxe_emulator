@@ -71,11 +71,11 @@
 
 void register_nvram_cmds(uc_engine *uc);
 int load_nvram(char *nvram_file);
-struct nvram_variables* lookup_nvram_var(const CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf);
+struct nvram_variables* lookup_nvram_var(const wchar_t *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf);
 
 struct nvram_variables
 {
-    CHAR16 name[256];
+    wchar_t name[256];
     EFI_GUID guid;
     uint8_t *data;
     TAILQ_ENTRY(nvram_variables) entries;

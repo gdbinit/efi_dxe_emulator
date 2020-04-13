@@ -374,7 +374,7 @@ find_vss_var(uint8_t *store_buf, uint32_t store_size, CHAR16 *var_name, EFI_GUID
 }
 
 struct nvram_variables *
-lookup_nvram_var(const CHAR16 *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
+lookup_nvram_var(const wchar_t *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf)
 {
     struct nvram_variables* entry = NULL;
     TAILQ_FOREACH(entry, &g_nvram_vars, entries)
