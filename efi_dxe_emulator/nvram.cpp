@@ -391,6 +391,28 @@ lookup_nvram_var(const wchar_t *var_name, EFI_GUID *guid, uint32_t *content_size
     return entry;
 }
 
+int
+del_nvram_var(const wchar_t* var_name)
+{
+    struct nvram_variables* entry = NULL;
+    TAILQ_FOREACH(entry, &g_nvram_vars, entries)
+    {
+        if (wcsncmp(entry->name, var_name, entry->name_size) == 0)
+        {
+            break;
+        }
+    }
+
+    if (entry)
+    {
+        OUTPUT_MSG("Deleting variable %S", var_name);
+        TAILQ_REMOVE(&g_nvram_vars, entry, entries);
+        return 0;
+    }
+
+    return -1;
+}
+
 static void
 dump_nvram_vars(const std::string& var_name)
 {

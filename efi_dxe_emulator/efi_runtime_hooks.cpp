@@ -642,6 +642,13 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     std::vector<std::byte> var_data(r_r9);
     uc_mem_read(uc, r_data, var_data.data(), r_r9);
 
+    if (r_r9 == 0)
+    {
+        /* delete variable */
+        del_nvram_var(var_name);
+        goto out;
+    }
+
     auto new_entry = static_cast<struct nvram_variables*>(my_malloc(sizeof(struct nvram_variables)));
     memcpy(&new_entry->guid, guid, sizeof(EFI_GUID));
     if (length * 2 + 2 <= sizeof(new_entry->name))
@@ -658,6 +665,7 @@ hook_SetVariable(uc_engine *uc, uint64_t address, uint32_t size, void *user_data
     memcpy(new_entry->data, var_data.data(), new_entry->data_size);
     TAILQ_INSERT_TAIL(&g_nvram_vars, new_entry, entries);
 
+out:
     /* return value */
     uint64_t r_rax = EFI_SUCCESS;
     err = uc_reg_write(uc, UC_X86_REG_RAX, &r_rax);

@@ -72,6 +72,7 @@
 void register_nvram_cmds(uc_engine *uc);
 int load_nvram(char *nvram_file);
 struct nvram_variables* lookup_nvram_var(const wchar_t *var_name, EFI_GUID *guid, uint32_t *content_size, unsigned char **out_buf);
+int del_nvram_var(const wchar_t* var_name);
 
 struct nvram_variables
 {
