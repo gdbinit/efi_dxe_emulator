@@ -382,8 +382,11 @@ lookup_nvram_var(const wchar_t *var_name, EFI_GUID *guid, uint32_t *content_size
         if (wcsncmp(entry->name, var_name, entry->name_size) == 0)
         {
             DEBUG_MSG("Found variable!");
-            *out_buf = static_cast<unsigned char*>(my_malloc(entry->data_size));
-            memcpy(*out_buf, entry->data, entry->data_size);
+            if (out_buf)
+            {
+                *out_buf = static_cast<unsigned char*>(my_malloc(entry->data_size));
+                memcpy(*out_buf, entry->data, entry->data_size);
+            }
             *content_size = entry->data_size;
             break;
         }
